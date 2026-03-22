@@ -24,7 +24,6 @@
         .bal { color: #10b981; font-weight: bold; font-size: 15px; margin-top: 2px; }
         
         .user-details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #475569; font-size: 11px; color: #94a3b8; line-height: 1.6; }
-        .user-card.active .user-details { display: block; }
         
         .math-btn { 
             background: #38bdf8; color: #0f172a; border: none; 
@@ -43,8 +42,8 @@
         .btn-rej { background: #ef4444; color: white; }
 
         .chat-card { background: #fff; color: #1e293b; border-radius: 10px; margin-bottom: 15px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .chat-history { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f1f5f9; }
-        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 12px; line-height: 1.4; }
+        .chat-history { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f1f5f9; scroll-behavior: smooth; }
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 12px; line-height: 1.4; word-wrap: break-word; }
         .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; border-bottom-right-radius: 2px; }
         .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; color: #1e293b; }
         
@@ -104,7 +103,7 @@
         });
 
         function startListeners() {
-            // 1. IMPROVED USERS LISTENER (Fixes the missing users bug)
+            // 1. ALL CLIENTS LISTENER
             onSnapshot(collection(db, "users"), (snap) => {
                 const list = document.getElementById('userList');
                 let totalCash = 0;
@@ -118,9 +117,9 @@
                     const card = document.createElement('div');
                     card.className = 'user-card';
                     card.innerHTML = `
-                        <div class="user-main" onclick="this.classList.toggle('active'); this.nextElementSibling.style.display = this.classList.contains('active') ? 'block' : 'none'">
+                        <div class="user-main" onclick="let det = this.nextElementSibling; det.style.display = (det.style.display === 'none') ? 'block' : 'none'">
                             <div class="user-info">
-                                <b>${u.fullName || 'NO NAME'}</b>
+                                <b>${u.fullName || u.email || 'NEW CLIENT'}</b>
                                 <div class="bal">$${bal.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
                             </div>
                             <button class="math-btn" onclick="event.stopPropagation(); window.doMath('${d.id}')">±</button>
@@ -137,7 +136,7 @@
                 document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString('en-US', {maximumFractionDigits: 0});
             });
 
-            // 2. REQUESTS FEED (KYC & WIRES)
+            // 2. REQUESTS FEED
             onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
                 const feed = document.getElementById('requestFeed');
                 let count = 0; feed.innerHTML = "";
@@ -151,7 +150,7 @@
 
                     feed.innerHTML += `
                         <div class="req-item" style="${isWire ? 'border-left-color: #ef4444;' : ''}">
-                            <div style="font-size:10px; color:#64748b; font-weight:bold;">CLIENT: ${r.userName}</div>
+                            <div style="font-size:10px; color:#64748b; font-weight:bold;">CLIENT: ${r.userName || r.userEmail}</div>
                             <div style="font-weight:bold; font-size:14px; color: var(--admin-blue);">${(r.type || "REQUEST").replace(/_/g, ' ')}</div>
                             <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
                             
@@ -184,7 +183,7 @@
                 snap.forEach(sDoc => {
                     const m = sDoc.data();
                     if (!m.userId) return;
-                    if (!groups[m.userId]) groups[m.userId] = { name: m.userName || "Client", msgs: [] };
+                    if (!groups[m.userId]) groups[m.userId] = { name: m.userName || m.userEmail || "Client", msgs: [] };
                     groups[m.userId].msgs.push(m);
                 });
                 chatFeed.innerHTML = "";
@@ -192,8 +191,8 @@
                     const g = groups[uid];
                     chatFeed.innerHTML += `
                         <div class="chat-card">
-                            <div style="padding:8px 12px; background:#e2e8f0; font-weight:bold; color:var(--admin-blue); font-size:11px; display:flex; justify-content:space-between;">
-                                <span>CHAT: ${g.name.toUpperCase()}</span>
+                            <div style="padding:8px 12px; background:#e2e8f0; font-weight:bold; color:var(--admin-blue); font-size:11px;">
+                                CHAT: ${g.name.toUpperCase()}
                             </div>
                             <div class="chat-history" id="chat-box-${uid}">${g.msgs.map(m => `<div class="msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>`).join('')}</div>
                             <div class="reply-box">
@@ -201,8 +200,11 @@
                                 <button onclick="window.adminReply('${uid}', '${g.name}')" class="action-btn btn-appr" style="flex:0; padding:8px 20px;">SEND</button>
                             </div>
                         </div>`;
-                    const box = document.getElementById(`chat-box-${uid}`);
-                    if(box) box.scrollTop = box.scrollHeight;
+                    // Scroll to bottom
+                    setTimeout(() => {
+                        const box = document.getElementById(`chat-box-${uid}`);
+                        if(box) box.scrollTop = box.scrollHeight;
+                    }, 100);
                 });
             });
         }
@@ -211,9 +213,9 @@
             const userRef = doc(db, "users", uid);
             const userSnap = await getDoc(userRef);
             const currentBal = parseFloat(userSnap.data().balance) || 0;
-            const val = prompt(`Adjust Balance for ${userSnap.data().fullName}:\nCurrent: $${currentBal}\n\nUse + for Add, - for Subtract:`, "0");
-            if(val !== null && !isNaN(val)) {
-                await updateDoc(userRef, { balance: currentBal + parseFloat(val) });
+            const val = prompt(`Adjust Balance for ${userSnap.data().fullName || 'User'}:\nCurrent: $${currentBal.toLocaleString()}\n\nUse + to add, - to subtract:`, "0");
+            if(val !== null && val !== "" && !isNaN(val)) {
+                await updateDoc(userRef, { balance: parseFloat((currentBal + parseFloat(val)).toFixed(2)) });
             }
         };
 
@@ -223,20 +225,17 @@
             
             try {
                 if (action === 'APPROVE') {
-                    if (type.includes("KYC")) {
-                        await updateDoc(uRef, { kycStatus: "APPROVED" });
-                    }
+                    if (type.includes("KYC")) { await updateDoc(uRef, { kycStatus: "APPROVED" }); }
                     await updateDoc(rRef, { status: "SUCCESSFUL" });
-                    alert("Approved successfully.");
+                    alert("Task Approved.");
                 } else {
-                    // VOID/REJECT - Handle Refund for Wire
                     if (type.includes("WIRE")) {
                         const snap = await getDoc(uRef);
                         const bal = parseFloat(snap.data().balance || 0);
-                        await updateDoc(uRef, { balance: bal + parseFloat(amt) });
+                        await updateDoc(uRef, { balance: parseFloat((bal + parseFloat(amt)).toFixed(2)) });
                     }
                     await updateDoc(rRef, { status: "REJECTED" });
-                    alert("Request Declined.");
+                    alert("Task Declined & Refunded.");
                 }
             } catch (e) { alert("Error: " + e.message); }
         };
