@@ -3,100 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA Admin | Global Control v8</title>
+    <title>SBA MASTER | V8.2 COMMAND</title>
     <style>
-        :root { --admin-dark: #0f172a; --sba-blue: #00274c; --accent: #3b82f6; }
-        body { background: #f8fafc; margin: 0; font-family: 'Inter', sans-serif; display: flex; height: 100vh; }
+        :root { --admin-red: #ba0c2f; --admin-blue: #00274c; --bg: #0f172a; }
+        body { background: var(--bg); color: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 13px; padding-bottom: 50px; }
         
-        /* Sidebar */
-        .sidebar { width: 260px; background: var(--admin-dark); color: white; padding: 20px; flex-shrink: 0; }
-        .nav-item { padding: 12px; margin: 8px 0; border-radius: 6px; cursor: pointer; transition: 0.3s; font-size: 14px; }
-        .nav-item:hover { background: rgba(255,255,255,0.1); }
-        .active { background: var(--accent) !important; font-weight: bold; }
-
-        /* Main Content */
-        .main { flex-grow: 1; overflow-y: auto; padding: 25px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .admin-nav { background: #1e293b; padding: 12px; border-bottom: 2px solid var(--admin-red); text-align: center; position: sticky; top:0; z-index:100; }
         
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-top: 4px solid var(--accent); }
-        .stat-val { font-size: 24px; font-weight: 800; color: var(--admin-dark); }
+        .stats-wrapper { display: flex; gap: 8px; padding: 10px; overflow-x: auto; }
+        .stat-card { flex: 1; background: #334155; padding: 10px; border-radius: 8px; text-align: center; min-width: 100px; border: 1px solid #475569; }
+        .stat-card h3 { font-size: 10px; margin: 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card p { margin: 4px 0 0; font-size: 16px; font-weight: bold; color: #38bdf8; }
 
-        /* Tables & Lists */
-        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .data-table th { background: #f1f5f9; padding: 15px; text-align: left; font-size: 12px; text-transform: uppercase; color: #64748b; }
-        .data-table td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .container { padding: 8px; max-width: 600px; margin: 0 auto; }
+        .section-title { font-size: 11px; color: #38bdf8; text-transform: uppercase; margin: 20px 0 10px; font-weight: bold; display:flex; align-items:center; gap:8px; border-left: 3px solid #38bdf8; padding-left: 8px; }
+        
+        .user-card { background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #334155; }
+        .user-main { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .user-info b { font-size: 14px; color: #fff; display: block; }
+        .bal { color: #10b981; font-weight: bold; font-size: 15px; margin-top: 2px; }
+        
+        .user-details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #475569; font-size: 11px; color: #94a3b8; line-height: 1.6; }
+        
+        .math-btn { 
+            background: #38bdf8; color: #0f172a; border: none; 
+            width: 36px; height: 36px; border-radius: 8px;
+            font-size: 18px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 3px 0 #0284c7; transition: 0.1s;
+        }
+        .math-btn:active { transform: translateY(2px); box-shadow: none; }
 
-        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-        .pending { background: #fef3c7; color: #92400e; }
-        .approved { background: #dcfce7; color: #166534; }
+        .req-item { background: #fff; color: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 6px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .req-item h2 { margin: 8px 0; font-size: 22px; color: #1e293b; font-weight: 800; }
+        .img-preview { width: 100%; height: 160px; object-fit: contain; background: #000; border-radius: 6px; margin: 8px 0; border: 1px solid #ddd; cursor: zoom-in; }
+        
+        .action-btn { padding: 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; flex: 1; text-transform: uppercase; }
+        .btn-appr { background: #10b981; color: white; }
+        .btn-rej { background: #ef4444; color: white; }
 
-        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: var(--accent); animation: load 2s infinite; display: none; }
-        @keyframes load { 0% { width: 0; } 100% { width: 100%; } }
+        .chat-card { background: #fff; color: #1e293b; border-radius: 10px; margin-bottom: 15px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .chat-history { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f1f5f9; scroll-behavior: smooth; }
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 12px; line-height: 1.4; word-wrap: break-word; }
+        .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; border-bottom-right-radius: 2px; }
+        .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; color: #1e293b; }
+        
+        .reply-box { padding: 10px; display: flex; gap: 8px; background: #fff; border-top: 1px solid #e2e8f0; }
+        .reply-box input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline:none; font-size: 13px; }
     </style>
 </head>
 <body>
 
-    <div id="loading"></div>
-
-    <div class="sidebar">
-        <h2 style="color:var(--accent)">SBA ADMIN</h2>
-        <div class="nav-item active" onclick="showTab('users')">👥 All Users (<span id="userCount">0</span>)</div>
-        <div class="nav-item" onclick="showTab('requests')">💸 Transactions</div>
-        <div class="nav-item" onclick="showTab('chat')">💬 Live Chat Support</div>
+    <div class="admin-nav">
+        <b style="font-size: 15px; letter-spacing: 1px;">SBA COMMAND V8.2</b><br>
+        <span id="adminEmail" style="font-size: 10px; color: #38bdf8; font-weight: bold;">AUTHENTICATING...</span>
     </div>
 
-    <div class="main">
-        <div class="header">
-            <h1>System Dashboard</h1>
-            <div id="adminEmail" style="font-size: 12px; color: #64748b;"></div>
-        </div>
+    <div class="stats-wrapper">
+        <div class="stat-card"><h3>Total Clients</h3><p id="stat-users">0</p></div>
+        <div class="stat-card"><h3>Active Tasks</h3><p id="stat-reqs">0</p></div>
+        <div class="stat-card"><h3>Vault Total</h3><p id="stat-cash">$0</p></div>
+    </div>
 
-        <div class="stat-grid">
-            <div class="stat-card">
-                <div style="font-size:12px; color:#64748b">TOTAL AUTH USERS</div>
-                <div class="stat-val" id="totalUsers">--</div>
-            </div>
-            <div class="stat-card">
-                <div style="font-size:12px; color:#64748b">PENDING TRANS.</div>
-                <div class="stat-val" id="pendingTrans">--</div>
-            </div>
-        </div>
+    <div class="container">
+        <div class="section-title">👤 ALL CLIENTS</div>
+        <div id="userList"><p style="text-align:center; color:#475569;">Accessing Database...</p></div>
 
-        <div id="usersTab">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>User / Email</th>
-                        <th>Balance</th>
-                        <th>KYC Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="userList"></tbody>
-            </table>
-        </div>
+        <div class="section-title">⚡ ACTION REQUIRED</div>
+        <div id="requestFeed"></div>
 
-        <div id="requestsTab" style="display:none">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Manage</th>
-                    </tr>
-                </thead>
-                <tbody id="transList"></tbody>
-            </table>
-        </div>
+        <div class="section-title">💬 LIVE SUPPORT</div>
+        <div id="chatFeed"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
@@ -112,74 +94,159 @@
         const db = getFirestore(app);
 
         onAuthStateChanged(auth, (user) => {
-            if (!user) { window.location.href = 'index.html'; return; }
-            document.getElementById('adminEmail').innerText = "Logged in: " + user.email;
-            
-            loadUsers();
-            loadTransactions();
+            if (user && user.email === "liger4683@gmail.com") {
+                document.getElementById('adminEmail').innerText = "SYSTEM ADMIN: " + user.email.toUpperCase();
+                startListeners();
+            } else { 
+                window.location.href = "index.html"; 
+            }
         });
 
-        // 1. Load All Users in Real-time
-        function loadUsers() {
+        function startListeners() {
+            // 1. ALL CLIENTS LISTENER
             onSnapshot(collection(db, "users"), (snap) => {
                 const list = document.getElementById('userList');
+                let totalCash = 0;
                 list.innerHTML = "";
-                document.getElementById('userCount').innerText = snap.size;
-                document.getElementById('totalUsers').innerText = snap.size;
+                
+                snap.forEach(d => {
+                    const u = d.data();
+                    let bal = parseFloat(u.balance) || 0;
+                    totalCash += bal;
 
-                snap.forEach(doc => {
-                    const u = doc.data();
-                    list.innerHTML += `
-                        <tr>
-                            <td><b>${u.fullName || 'No Name'}</b><br><small>${u.email || 'N/A'}</small></td>
-                            <td>$${(u.balance || 0).toLocaleString()}</td>
-                            <td><span class="status-pill ${u.kycStatus === 'APPROVED' ? 'approved' : 'pending'}">${u.kycStatus || 'NOT STARTED'}</span></td>
-                            <td><button onclick="window.manageUser('${doc.id}')" style="cursor:pointer">Edit</button></td>
-                        </tr>
-                    `;
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+                    card.innerHTML = `
+                        <div class="user-main" onclick="let det = this.nextElementSibling; det.style.display = (det.style.display === 'none') ? 'block' : 'none'">
+                            <div class="user-info">
+                                <b>${u.fullName || u.email || 'NEW CLIENT'}</b>
+                                <div class="bal">$${bal.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                            </div>
+                            <button class="math-btn" onclick="event.stopPropagation(); window.doMath('${d.id}')">±</button>
+                        </div>
+                        <div class="user-details" style="display:none">
+                            <b>EMAIL:</b> <span style="color:#fff">${u.email}</span><br>
+                            <b>KYC STATUS:</b> <span style="color:#38bdf8">${u.kycStatus || 'NOT STARTED'}</span><br>
+                            <b>PHONE:</b> ${u.phone || 'N/A'}<br>
+                            <b>UID:</b> <small>${d.id}</small>
+                        </div>`;
+                    list.appendChild(card);
+                });
+                document.getElementById('stat-users').innerText = snap.size;
+                document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString('en-US', {maximumFractionDigits: 0});
+            });
+
+            // 2. REQUESTS FEED
+            onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
+                const feed = document.getElementById('requestFeed');
+                let count = 0; feed.innerHTML = "";
+                
+                snap.forEach(d => {
+                    const r = d.data();
+                    if(r.status !== "PENDING") return;
+                    count++;
+                    const isKyc = r.type && r.type.includes("KYC");
+                    const isWire = r.type && r.type.includes("WIRE");
+
+                    feed.innerHTML += `
+                        <div class="req-item" style="${isWire ? 'border-left-color: #ef4444;' : ''}">
+                            <div style="font-size:10px; color:#64748b; font-weight:bold;">CLIENT: ${r.userName || r.userEmail}</div>
+                            <div style="font-weight:bold; font-size:14px; color: var(--admin-blue);">${(r.type || "REQUEST").replace(/_/g, ' ')}</div>
+                            <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
+                            
+                            ${isWire ? `<div style="font-size:11px; color:#475569; margin:8px 0; padding:8px; background:#f1f5f9; border-radius:4px;">
+                                🏦 <b>BANK:</b> ${r.bankName}<br>
+                                📍 <b>ROUTING:</b> ${r.routing}<br>
+                                💳 <b>ACCOUNT:</b> ${r.account}
+                            </div>` : ''}
+
+                            ${isKyc ? `
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:5px;">
+                                    <img src="${r.frontImg}" class="img-preview" onclick="window.open(this.src)">
+                                    <img src="${r.backImg}" class="img-preview" onclick="window.open(this.src)">
+                                </div>` : ''}
+
+                            <div style="display:flex; gap:8px; margin-top:12px;">
+                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">APPROVE</button>
+                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">DECLINE</button>
+                            </div>
+                        </div>`;
+                });
+                document.getElementById('stat-reqs').innerText = count;
+                if(count === 0) feed.innerHTML = "<p style='text-align:center; color:#475569; padding: 20px;'>No pending tasks.</p>";
+            });
+
+            // 3. CHAT SYNC
+            onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snap) => {
+                const chatFeed = document.getElementById('chatFeed');
+                const groups = {};
+                snap.forEach(sDoc => {
+                    const m = sDoc.data();
+                    if (!m.userId) return;
+                    if (!groups[m.userId]) groups[m.userId] = { name: m.userName || m.userEmail || "Client", msgs: [] };
+                    groups[m.userId].msgs.push(m);
+                });
+                chatFeed.innerHTML = "";
+                Object.keys(groups).forEach(uid => {
+                    const g = groups[uid];
+                    chatFeed.innerHTML += `
+                        <div class="chat-card">
+                            <div style="padding:8px 12px; background:#e2e8f0; font-weight:bold; color:var(--admin-blue); font-size:11px;">
+                                CHAT: ${g.name.toUpperCase()}
+                            </div>
+                            <div class="chat-history" id="chat-box-${uid}">${g.msgs.map(m => `<div class="msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>`).join('')}</div>
+                            <div class="reply-box">
+                                <input type="text" id="reply-input-${uid}" placeholder="Type reply...">
+                                <button onclick="window.adminReply('${uid}', '${g.name}')" class="action-btn btn-appr" style="flex:0; padding:8px 20px;">SEND</button>
+                            </div>
+                        </div>`;
+                    // Scroll to bottom
+                    setTimeout(() => {
+                        const box = document.getElementById(`chat-box-${uid}`);
+                        if(box) box.scrollTop = box.scrollHeight;
+                    }, 100);
                 });
             });
         }
 
-        // 2. Load Transactions / Requests
-        function loadTransactions() {
-            const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
-            onSnapshot(q, (snap) => {
-                const list = document.getElementById('transList');
-                list.innerHTML = "";
-                let pendingCount = 0;
-
-                snap.forEach(doc => {
-                    const t = doc.data();
-                    if(t.status === "PENDING") pendingCount++;
-                    
-                    list.innerHTML += `
-                        <tr>
-                            <td>${t.timestamp ? t.timestamp.toDate().toLocaleDateString() : 'Just now'}</td>
-                            <td>${t.type}</td>
-                            <td>$${parseFloat(t.amount).toLocaleString()}</td>
-                            <td><span class="status-pill ${t.status.toLowerCase()}">${t.status}</span></td>
-                            <td>
-                                <button onclick="window.updateStatus('requests', '${doc.id}', 'APPROVED')" style="color:green">✔</button>
-                                <button onclick="window.updateStatus('requests', '${doc.id}', 'REJECTED')" style="color:red">✖</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                document.getElementById('pendingTrans').innerText = pendingCount;
-            });
-        }
-
-        // Global Action Functions
-        window.updateStatus = async (col, id, newStatus) => {
-            const ref = doc(db, col, id);
-            await updateDoc(ref, { status: newStatus });
-            alert("Status Updated to " + newStatus);
+        window.doMath = async (uid) => {
+            const userRef = doc(db, "users", uid);
+            const userSnap = await getDoc(userRef);
+            const currentBal = parseFloat(userSnap.data().balance) || 0;
+            const val = prompt(`Adjust Balance for ${userSnap.data().fullName || 'User'}:\nCurrent: $${currentBal.toLocaleString()}\n\nUse + to add, - to subtract:`, "0");
+            if(val !== null && val !== "" && !isNaN(val)) {
+                await updateDoc(userRef, { balance: parseFloat((currentBal + parseFloat(val)).toFixed(2)) });
+            }
         };
 
-        window.showTab = (tab) => {
-            document.getElementById('usersTab').style.display = tab === 'users' ? 'block' : 'none';
-            document.getElementById('requestsTab').style.display = tab === 'requests' ? 'block' : 'none';
+        window.processTask = async (docId, uid, action, type, amt) => {
+            const uRef = doc(db, "users", uid);
+            const rRef = doc(db, "requests", docId);
+            
+            try {
+                if (action === 'APPROVE') {
+                    if (type.includes("KYC")) { await updateDoc(uRef, { kycStatus: "APPROVED" }); }
+                    await updateDoc(rRef, { status: "SUCCESSFUL" });
+                    alert("Task Approved.");
+                } else {
+                    if (type.includes("WIRE")) {
+                        const snap = await getDoc(uRef);
+                        const bal = parseFloat(snap.data().balance || 0);
+                        await updateDoc(uRef, { balance: parseFloat((bal + parseFloat(amt)).toFixed(2)) });
+                    }
+                    await updateDoc(rRef, { status: "REJECTED" });
+                    alert("Task Declined & Refunded.");
+                }
+            } catch (e) { alert("Error: " + e.message); }
+        };
+
+        window.adminReply = async (uid, name) => {
+            const el = document.getElementById(`reply-input-${uid}`);
+            if(!el.value) return;
+            await addDoc(collection(db, "support_tickets"), {
+                userId: uid, userName: name, message: el.value, sender: "ADMIN", timestamp: serverTimestamp()
+            });
+            el.value = "";
         };
     </script>
 </body>
