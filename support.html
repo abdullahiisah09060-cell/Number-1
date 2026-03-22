@@ -2,90 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA | Support Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SBA Support Hub</title>
     <style>
-        :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --bg: #f1f5f9; --white: #ffffff; }
+        :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --bg: #e5e7eb; }
+        * { box-sizing: border-box; }
         
         body { 
-            background: var(--bg); margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
+            background: var(--bg); margin: 0; font-family: sans-serif; 
+            display: flex; justify-content: center; align-items: center; height: 100vh;
         }
 
-        .chat-container {
-            width: 100%; max-width: 450px; height: 95vh; background: var(--white);
-            display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border-radius: 12px; border: 1px solid #d1d5db;
+        /* Not full screen - centered card for mobile */
+        .chat-card {
+            width: 95%; max-width: 420px; height: 85vh; 
+            background: white; border-radius: 15px; display: flex; 
+            flex-direction: column; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border: 1px solid #cbd5e1;
         }
 
-        /* Official Header */
-        .chat-header { 
-            background: var(--sba-blue); color: white; padding: 15px 20px; 
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 4px solid var(--sba-red);
+        .header { 
+            background: var(--sba-blue); color: white; padding: 12px; 
+            text-align: center; border-bottom: 3px solid var(--sba-red);
         }
 
-        .status-bar {
-            background: #e2e8f0; padding: 8px 15px; font-size: 10px; 
-            color: #475569; font-weight: bold; border-bottom: 1px solid #cbd5e1;
-            display: flex; justify-content: space-between;
+        .welcome-box {
+            background: #f1f5f9; border: 1px dashed #00274c; margin: 10px;
+            padding: 10px; border-radius: 8px; font-size: 11px; color: #1e293b;
         }
 
-        /* Message Area - Fixed for proper order */
         #messageDisplay { 
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; 
-            flex-direction: column; gap: 15px; background: #f8fafc;
+            flex: 1; overflow-y: auto; padding: 10px; display: flex; 
+            flex-direction: column; gap: 10px; background: #f8fafc;
         }
 
         .bubble { 
-            max-width: 80%; padding: 12px 16px; border-radius: 15px; font-size: 14px; 
-            line-height: 1.5; position: relative; word-wrap: break-word;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-width: 85%; padding: 10px; border-radius: 10px; font-size: 14px; 
+            line-height: 1.4; word-wrap: break-word;
         }
         
-        /* Newest messages will appear at the bottom */
-        .user { align-self: flex-end; background: var(--sba-blue); color: white; border-bottom-right-radius: 2px; }
-        .admin { align-self: flex-start; background: white; color: #1e293b; border-bottom-left-radius: 2px; border: 1px solid #e2e8f0; }
+        .user { align-self: flex-end; background: var(--sba-blue); color: white; }
+        .admin { align-self: flex-start; background: #f1f5f9; color: #000; border: 1px solid #ddd; }
 
-        .sender-name { font-size: 10px; font-weight: bold; margin-bottom: 4px; display: block; opacity: 0.8; }
+        .tag { font-size: 9px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; }
 
-        /* Input Area */
-        .input-area { padding: 15px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
-        input { 
-            flex: 1; padding: 12px 18px; border: 1px solid #cbd5e1; 
-            border-radius: 30px; outline: none; font-size: 14px; 
-        }
-        .send-btn { 
-            background: var(--sba-blue); color: white; border: none; 
-            width: 45px; height: 45px; border-radius: 50%; cursor: pointer; 
-            font-weight: bold; font-size: 18px; transition: 0.2s;
-        }
-        .send-btn:hover { background: #003a70; }
+        .input-area { padding: 10px; background: white; border-top: 1px solid #eee; display: flex; gap: 5px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 20px; outline: none; font-size: 16px; }
+        .send-btn { background: var(--sba-blue); color: white; border: none; padding: 0 15px; border-radius: 20px; font-weight: bold; }
         
-        .exit-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 4px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; }
+        .exit-btn { position: absolute; top: 10px; right: 10px; background: #000; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; font-size: 10px; cursor: pointer; z-index: 100; }
     </style>
 </head>
 <body>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <div>
-                <div style="font-size: 16px; font-weight: 800; letter-spacing: 1px;">U.S. SBA</div>
-                <div style="font-size: 10px; opacity: 0.9;">OFFICIAL DISBURSEMENT SUPPORT</div>
-            </div>
-            <button class="exit-btn" onclick="location.href='dashboard.html'">EXIT</button>
-        </div>
+    <button class="exit-btn" onclick="location.href='dashboard.html'">BACK</button>
 
-        <div class="status-bar">
-            <span id="caseId">CASE: SBA-LOADING</span>
-            <span style="color: #10b981;">● ENCRYPTED</span>
+    <div class="chat-card">
+        <div class="header">
+            <div style="font-size: 14px; font-weight: bold;">U.S. SBA SUPPORT</div>
+            <div style="font-size: 9px;">OFFICIAL AGENT ONLINE</div>
         </div>
 
         <div id="messageDisplay">
             </div>
 
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Type your inquiry here..." autocomplete="off">
+            <input type="text" id="userInput" placeholder="Message..." autocomplete="off">
             <button id="sendBtn" class="send-btn">➤</button>
         </div>
     </div>
@@ -93,7 +75,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, doc, getDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
@@ -114,42 +96,35 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                document.getElementById('caseId').innerText = "CASE: SBA-" + user.uid.substring(0,8).toUpperCase();
-                
                 const uSnap = await getDoc(doc(db, "users", user.uid));
                 if(uSnap.exists()) userName = uSnap.data().fullName || "Applicant";
 
-                // Query messages by time ASCENDING so new ones appear at the BOTTOM
-                const q = query(
-                    collection(db, "support_tickets"), 
-                    where("userId", "==", user.uid),
-                    orderBy("timestamp", "asc")
-                );
+                // We remove "orderBy" for now to make sure messages show up even without a database index
+                const q = query(collection(db, "support_tickets"), where("userId", "==", user.uid));
 
                 onSnapshot(q, (snapshot) => {
                     display.innerHTML = `
-                        <div style="text-align:center; padding: 10px 0;">
-                            <small style="color:#94a3b8; font-size:10px;">Security check completed. Official session started.</small>
-                        </div>
-                        <div class="bubble admin">
-                            <span class="sender-name">SBA OFFICER</span>
-                            Hello ${userName}, how can we assist you with your federal disbursement today?
+                        <div class="welcome-box">
+                            <b>OFFICIAL SBA WELCOME PACKAGE</b><br>
+                            Hello ${userName}, your secure chat is active. 
+                            An officer has been assigned to your Case ID: ${user.uid.substring(0,6)}.
                         </div>
                     `;
                     
-                    snapshot.forEach(doc => {
-                        const m = doc.data();
+                    // Sort locally to ensure correct order without needing index
+                    const msgs = [];
+                    snapshot.forEach(d => msgs.push(d.data()));
+                    msgs.sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
+
+                    msgs.forEach(m => {
                         const div = document.createElement('div');
                         div.className = `bubble ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
-                        
-                        const nameLabel = m.sender === 'ADMIN' ? 'SBA OFFICER' : 'YOU';
-                        div.innerHTML = `<span class="sender-name">${nameLabel}</span>${m.message}`;
-                        
+                        const tag = m.sender === 'ADMIN' ? 'OFFICER' : 'YOU';
+                        div.innerHTML = `<span class="tag">${tag}</span>${m.message}`;
                         display.appendChild(div);
                     });
                     
-                    // Always scroll to the newest message at the bottom
-                    display.scrollTo(0, display.scrollHeight);
+                    display.scrollTop = display.scrollHeight;
                 });
 
             } else { window.location.href = 'index.html'; }
@@ -158,25 +133,22 @@
         const sendMessage = async () => {
             const msg = input.value.trim();
             if(!msg || !auth.currentUser) return;
-            
-            const user = auth.currentUser;
+            const uid = auth.currentUser.uid;
             input.value = ""; 
 
             try {
                 await addDoc(collection(db, "support_tickets"), {
-                    userId: user.uid,
+                    userId: uid,
                     userName: userName,
                     message: msg,
                     sender: "USER",
                     timestamp: serverTimestamp()
                 });
-            } catch (err) { 
-                console.error("Send error:", err);
-            }
+            } catch (err) { alert("Error sending message."); }
         };
 
-            document.getElementById('sendBtn').onclick = sendMessage;
-            input.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+        document.getElementById('sendBtn').onclick = sendMessage;
+        input.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
     </script>
 </body>
 </html>
