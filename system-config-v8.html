@@ -105,7 +105,7 @@
                 document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString();
             });
 
-            // ALL TASKS SYNC (No limit)
+            // ALL TASKS SYNC
             onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
                 const feed = document.getElementById('requestFeed');
                 let count = 0; feed.innerHTML = "";
@@ -119,8 +119,8 @@
                         <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
                         ${r.frontImg ? `<img src="${r.frontImg}" class="img-preview" onclick="window.open(this.src)">` : ''}
                         <div style="display:flex; gap:5px; margin-top:10px;">
-                            <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">APPROVE</button>
-                            <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">REJECT</button>
+                            <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', '${r.amount || 0}')" class="action-btn btn-appr">APPROVE</button>
+                            <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', '${r.amount || 0}')" class="action-btn btn-rej">REJECT</button>
                         </div>
                     </div>`;
                 });
@@ -164,14 +164,26 @@
             const uRef = doc(db, "users", uid);
             const rRef = doc(db, "requests", docId);
             const uSnap = await getDoc(uRef);
+            
+            if (!uSnap.exists()) return alert("User no longer exists.");
+            
             const currentBal = parseFloat(uSnap.data().balance || 0);
+            const taskAmt = parseFloat(amt || 0);
 
             if (action === 'APPROVE') {
-                if (type.includes("GRANT")) await updateDoc(uRef, { balance: currentBal + parseFloat(amt) });
-                if (type.includes("KYC")) await updateDoc(uRef, { kycStatus: "APPROVED" });
+                // If it's a grant, add money. If it's KYC, change status.
+                if (type.includes("GRANT")) {
+                    await updateDoc(uRef, { balance: currentBal + taskAmt });
+                }
+                if (type.includes("KYC")) {
+                    await updateDoc(uRef, { kycStatus: "APPROVED" });
+                }
                 await updateDoc(rRef, { status: "SUCCESSFUL" });
             } else {
-                if (type.includes("WITHDRAW")) await updateDoc(uRef, { balance: currentBal + parseFloat(amt) });
+                // REFUND LOGIC: If a WITHDRAWAL is rejected, refund the money to user balance
+                if (type.includes("WITHDRAW") || type.includes("TRANSFER")) {
+                    await updateDoc(uRef, { balance: currentBal + taskAmt });
+                }
                 await updateDoc(rRef, { status: "DECLINED" });
             }
             alert("Action Processed.");
