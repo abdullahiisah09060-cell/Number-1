@@ -25,9 +25,9 @@
         .minus { color: #ef4444; }
         
         .status-badge { font-size: 9px; padding: 3px 10px; border-radius: 4px; font-weight: 900; text-transform: uppercase; margin-top: 5px; display: inline-block; }
-        .bg-pending { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
-        .bg-success { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
-        .bg-denied { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
+        .SUCCESSFUL, .bg-success { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
+        .PENDING, .bg-pending { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
+        .REJECTED, .DENIED, .bg-denied { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
         .empty-state { text-align: center; padding: 40px 20px; color: #64748b; font-size: 12px; font-style: italic; }
     </style>
 </head>
@@ -65,14 +65,14 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // Using your exact updated config
+        // THIS IS THE CONFIG THAT WORKS
         const firebaseConfig = {
-            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
-            authDomain: "sba-grant-2026.firebaseapp.com",
-            projectId: "sba-grant-2026",
-            storageBucket: "sba-grant-2026.firebasestorage.app",
-            messagingSenderId: "838430821326",
-            appId: "1:838430821326:web:6438deacb334076a64f99f"
+            apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+            authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+            projectId: "sba-portal-2026-f1253",
+            storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+            messagingSenderId: "363290267220",
+            appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -88,16 +88,12 @@
                 if (!userSnap.exists()) return;
                 const userData = userSnap.data();
                 
-                let rawBal = userData.balance || 0;
-                const bal = parseFloat(rawBal).toLocaleString('en-US', {minimumFractionDigits: 2});
+                const bal = parseFloat(userData.balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2});
 
                 const q = query(collection(db, "requests"), where("userId", "==", user.uid));
                 
                 onSnapshot(q, (snapshot) => {
-                    list.innerHTML = ""; 
-
-                    // 1. PRIMARY ALLOCATION (Grant Balance)
-                    list.innerHTML += `
+                    let html = `
                         <div class="t-row">
                             <div class="t-info">
                                 <span class="t-name">FY2026 GRANT ALLOCATION</span>
@@ -110,49 +106,36 @@
                         </div>
                     `;
 
-                    // 2. PROCESS SUB-REQUESTS
-                    const items = [];
-                    snapshot.forEach(d => items.push({ id: d.id, ...d.data() }));
-                    
-                    // Client-side sorting (Newest first)
-                    items.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-
-                    items.forEach((t) => {
-                        const status = (t.status || 'PENDING').toUpperCase();
-                        let badgeClass = "bg-pending";
+                    if (!snapshot.empty) {
+                        const items = [];
+                        snapshot.forEach(d => items.push(d.data()));
                         
-                        if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) badgeClass = "bg-success";
-                        if (["DENIED", "FAILED", "REJECTED", "DECLINED"].includes(status)) badgeClass = "bg-denied";
+                        // Sort by date (Newest first)
+                        items.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
-                        const type = (t.type || "REQUEST").toUpperCase();
-                        const isNeg = type.includes("TRANSFER") || type.includes("WITHDRAWAL") || type.includes("WIRE");
-                        
-                        let amtRaw = t.amount || 0;
-                        const amt = parseFloat(amtRaw).toLocaleString('en-US', {minimumFractionDigits: 2});
-                        
-                        let dateStr = "IN REVIEW";
-                        if(t.timestamp) {
-                            const d = t.timestamp.toDate();
-                            dateStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-                        }
+                        items.forEach((t) => {
+                            const status = (t.status || 'PENDING').toUpperCase();
+                            const type = (t.type || "REQUEST").toUpperCase();
+                            const isNeg = type.includes("TRANSFER") || type.includes("WITHDRAWAL") || type.includes("WIRE");
+                            const amt = parseFloat(t.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2});
+                            
+                            const dateStr = t.timestamp ? t.timestamp.toDate().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : "IN REVIEW";
 
-                        list.innerHTML += `
-                            <div class="t-row">
-                                <div class="t-info">
-                                    <span class="t-name">${type.replace(/_/g, ' ')}</span>
-                                    <span class="t-date">${dateStr}</span>
+                            html += `
+                                <div class="t-row">
+                                    <div class="t-info">
+                                        <span class="t-name">${type.replace(/_/g, ' ')}</span>
+                                        <span class="t-date">${dateStr}</span>
+                                    </div>
+                                    <div class="t-amt">
+                                        <span class="${isNeg ? 'minus' : 'plus'}">${isNeg ? '-' : '+'}$${amt}</span><br>
+                                        <span class="status-badge ${status}">${status}</span>
+                                    </div>
                                 </div>
-                                <div class="t-amt">
-                                    <span class="${isNeg ? 'minus' : 'plus'}">${isNeg ? '-' : '+'}$${amt}</span><br>
-                                    <span class="status-badge ${badgeClass}">${status}</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    if (items.length === 0 && parseFloat(rawBal) === 0) {
-                        list.innerHTML = `<div class="empty-state">No federal records found.</div>`;
+                            `;
+                        });
                     }
+                    list.innerHTML = html;
                 });
             });
         });
