@@ -3,71 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA | Official Support Hub</title>
+    <title>SBA | Support Hub</title>
     <style>
-        :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --bg: #f1f5f9; }
+        :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --bg: #f1f5f9; --white: #ffffff; }
         
         body { 
-            background: var(--bg); margin: 0; font-family: 'Segoe UI', Roboto, sans-serif; 
-            display: flex; justify-content: center; align-items: center; height: 100vh;
+            background: var(--bg); margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
         }
 
-        .chat-box {
-            width: 100%; max-width: 450px; height: 95vh; background: #ffffff;
-            border-radius: 15px; display: flex; flex-direction: column;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;
+        .chat-container {
+            width: 100%; max-width: 450px; height: 95vh; background: var(--white);
+            display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 12px; border: 1px solid #d1d5db;
         }
 
+        /* Official Header */
         .chat-header { 
-            background: var(--sba-blue); color: white; padding: 15px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 3px solid var(--sba-red);
+            background: var(--sba-blue); color: white; padding: 15px 20px; 
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 4px solid var(--sba-red);
         }
 
+        .status-bar {
+            background: #e2e8f0; padding: 8px 15px; font-size: 10px; 
+            color: #475569; font-weight: bold; border-bottom: 1px solid #cbd5e1;
+            display: flex; justify-content: space-between;
+        }
+
+        /* Message Area - Fixed for proper order */
         #messageDisplay { 
-            flex: 1; overflow-y: auto; padding: 15px; display: flex; 
-            flex-direction: column; gap: 10px; background: #f8fafc;
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; 
+            flex-direction: column; gap: 15px; background: #f8fafc;
         }
 
         .bubble { 
-            max-width: 85%; padding: 10px 14px; border-radius: 15px; font-size: 13px; 
-            line-height: 1.4; position: relative; word-wrap: break-word;
+            max-width: 80%; padding: 12px 16px; border-radius: 15px; font-size: 14px; 
+            line-height: 1.5; position: relative; word-wrap: break-word;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
+        /* Newest messages will appear at the bottom */
         .user { align-self: flex-end; background: var(--sba-blue); color: white; border-bottom-right-radius: 2px; }
-        .admin { align-self: flex-start; background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 2px; border: 1px solid #cbd5e1; }
+        .admin { align-self: flex-start; background: white; color: #1e293b; border-bottom-left-radius: 2px; border: 1px solid #e2e8f0; }
 
-        .system-msg { 
-            text-align: center; font-size: 10px; color: #64748b; 
-            background: #fff; padding: 10px; border-radius: 8px; 
-            margin-bottom: 10px; border: 1px dashed #cbd5e1;
+        .sender-name { font-size: 10px; font-weight: bold; margin-bottom: 4px; display: block; opacity: 0.8; }
+
+        /* Input Area */
+        .input-area { padding: 15px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
+        input { 
+            flex: 1; padding: 12px 18px; border: 1px solid #cbd5e1; 
+            border-radius: 30px; outline: none; font-size: 14px; 
         }
-
-        .input-area { padding: 12px; background: white; border-top: 1px solid #eee; display: flex; gap: 8px; }
-        input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 14px; }
-        .send-btn { background: var(--sba-blue); color: white; border: none; padding: 0 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .send-btn { 
+            background: var(--sba-blue); color: white; border: none; 
+            width: 45px; height: 45px; border-radius: 50%; cursor: pointer; 
+            font-weight: bold; font-size: 18px; transition: 0.2s;
+        }
+        .send-btn:hover { background: #003a70; }
         
-        .exit-btn { background: var(--sba-red); border: none; color: white; padding: 5px 10px; border-radius: 5px; font-size: 10px; cursor: pointer; }
+        .exit-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 4px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="chat-box">
+    <div class="chat-container">
         <div class="chat-header">
             <div>
-                <div style="font-size: 14px; font-weight: bold;">SBA LIVE SUPPORT</div>
-                <div style="font-size: 9px; opacity: 0.8;">OFFICER ONLINE • SECURE CHANNEL</div>
+                <div style="font-size: 16px; font-weight: 800; letter-spacing: 1px;">U.S. SBA</div>
+                <div style="font-size: 10px; opacity: 0.9;">OFFICIAL DISBURSEMENT SUPPORT</div>
             </div>
-            <button class="exit-btn" onclick="location.href='dashboard.html'">CLOSE</button>
+            <button class="exit-btn" onclick="location.href='dashboard.html'">EXIT</button>
+        </div>
+
+        <div class="status-bar">
+            <span id="caseId">CASE: SBA-LOADING</span>
+            <span style="color: #10b981;">● ENCRYPTED</span>
         </div>
 
         <div id="messageDisplay">
-            <p style="text-align:center; font-size:10px; color:#999;">Initializing secure encryption...</p>
-        </div>
+            </div>
 
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Type your message here..." autocomplete="off">
-            <button id="sendBtn" class="send-btn">SEND</button>
+            <input type="text" id="userInput" placeholder="Type your inquiry here..." autocomplete="off">
+            <button id="sendBtn" class="send-btn">➤</button>
         </div>
     </div>
 
@@ -95,11 +114,12 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Get name for the greeting
+                document.getElementById('caseId').innerText = "CASE: SBA-" + user.uid.substring(0,8).toUpperCase();
+                
                 const uSnap = await getDoc(doc(db, "users", user.uid));
                 if(uSnap.exists()) userName = uSnap.data().fullName || "Applicant";
 
-                // Optimized Query: We listen for messages for THIS user
+                // Query messages by time ASCENDING so new ones appear at the BOTTOM
                 const q = query(
                     collection(db, "support_tickets"), 
                     where("userId", "==", user.uid),
@@ -107,16 +127,13 @@
                 );
 
                 onSnapshot(q, (snapshot) => {
-                    // Clear and set Welcome Package
                     display.innerHTML = `
-                        <div class="system-msg">
-                            <b>FEDERAL SUPPORT PACKAGE ACTIVATED</b><br>
-                            Case ID: SBA-${user.uid.substring(0,8).toUpperCase()}<br>
-                            Status: Secure Connection Verified
+                        <div style="text-align:center; padding: 10px 0;">
+                            <small style="color:#94a3b8; font-size:10px;">Security check completed. Official session started.</small>
                         </div>
                         <div class="bubble admin">
-                            <b>SBA OFFICER:</b> Hello ${userName}. Welcome to the official support hub. 
-                            Your grant file is currently open. How can I assist you with your disbursement or verification today?
+                            <span class="sender-name">SBA OFFICER</span>
+                            Hello ${userName}, how can we assist you with your federal disbursement today?
                         </div>
                     `;
                     
@@ -125,38 +142,18 @@
                         const div = document.createElement('div');
                         div.className = `bubble ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
                         
-                        // Bold the sender for clarity
-                        const senderTag = m.sender === 'ADMIN' ? '<b>OFFICER:</b> ' : '<b>YOU:</b> ';
-                        div.innerHTML = senderTag + m.message;
+                        const nameLabel = m.sender === 'ADMIN' ? 'SBA OFFICER' : 'YOU';
+                        div.innerHTML = `<span class="sender-name">${nameLabel}</span>${m.message}`;
                         
                         display.appendChild(div);
                     });
                     
-                    // Force scroll to bottom
-                    display.scrollTop = display.scrollHeight;
-                }, (error) => {
-                    // If index is missing, fallback to simple query
-                    console.error("Index error, falling back...");
-                    loadSimple(user.uid);
+                    // Always scroll to the newest message at the bottom
+                    display.scrollTo(0, display.scrollHeight);
                 });
 
             } else { window.location.href = 'index.html'; }
         });
-
-        // Fallback function in case Firebase index isn't ready
-        function loadSimple(uid) {
-            const qBasic = query(collection(db, "support_tickets"), where("userId", "==", uid));
-            onSnapshot(qBasic, (snap) => {
-                display.innerHTML = `<div class="bubble admin">Connection Active. Please type your message.</div>`;
-                snap.forEach(doc => {
-                    const m = doc.data();
-                    const div = document.createElement('div');
-                    div.className = `bubble ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
-                    div.innerHTML = m.message;
-                    display.appendChild(div);
-                });
-            });
-        }
 
         const sendMessage = async () => {
             const msg = input.value.trim();
@@ -174,12 +171,12 @@
                     timestamp: serverTimestamp()
                 });
             } catch (err) { 
-                alert("Message failed to send. Check connection.");
+                console.error("Send error:", err);
             }
         };
 
-        document.getElementById('sendBtn').onclick = sendMessage;
-        input.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+            document.getElementById('sendBtn').onclick = sendMessage;
+            input.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
     </script>
 </body>
 </html>
