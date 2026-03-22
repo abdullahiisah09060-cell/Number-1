@@ -3,58 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA MASTER | V8.2 COMMAND</title>
+    <title>SBA MASTER | V8.2 COMMAND PRO</title>
     <style>
         :root { --admin-red: #ba0c2f; --admin-blue: #00274c; --bg: #0f172a; }
         body { background: var(--bg); color: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 13px; padding-bottom: 50px; }
-        
         .admin-nav { background: #1e293b; padding: 12px; border-bottom: 2px solid var(--admin-red); text-align: center; position: sticky; top:0; z-index:100; }
-        
-        .stats-wrapper { display: flex; gap: 8px; padding: 10px; overflow-x: auto; }
+        .stats-wrapper { display: flex; gap: 8px; padding: 10px; overflow-x: auto; position: sticky; top: 48px; background: var(--bg); z-index: 99; }
         .stat-card { flex: 1; background: #334155; padding: 10px; border-radius: 8px; text-align: center; min-width: 100px; border: 1px solid #475569; }
-        .stat-card h3 { font-size: 10px; margin: 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card h3 { font-size: 10px; margin: 0; color: #94a3b8; text-transform: uppercase; }
         .stat-card p { margin: 4px 0 0; font-size: 16px; font-weight: bold; color: #38bdf8; }
-
         .container { padding: 8px; max-width: 600px; margin: 0 auto; }
-        .section-title { font-size: 11px; color: #38bdf8; text-transform: uppercase; margin: 20px 0 10px; font-weight: bold; display:flex; align-items:center; gap:8px; border-left: 3px solid #38bdf8; padding-left: 8px; }
+        .section-title { font-size: 11px; color: #38bdf8; text-transform: uppercase; margin: 20px 0 10px; font-weight: bold; border-left: 3px solid #38bdf8; padding-left: 8px; }
         
-        .user-card { background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #334155; }
+        /* Users List Optimization */
+        #userList { display: grid; gap: 8px; }
+        .user-card { background: #1e293b; padding: 12px; border-radius: 10px; border: 1px solid #334155; transition: 0.2s; }
         .user-main { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .user-info b { font-size: 14px; color: #fff; display: block; }
-        .bal { color: #10b981; font-weight: bold; font-size: 15px; margin-top: 2px; }
-        
-        .user-details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #475569; font-size: 11px; color: #94a3b8; line-height: 1.6; }
-        
-        .math-btn { 
-            background: #38bdf8; color: #0f172a; border: none; 
-            width: 36px; height: 36px; border-radius: 8px;
-            font-size: 18px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 3px 0 #0284c7; transition: 0.1s;
-        }
+        .bal { color: #10b981; font-weight: bold; font-size: 15px; }
+        .math-btn { background: #38bdf8; color: #0f172a; border: none; width: 36px; height: 36px; border-radius: 8px; font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 3px 0 #0284c7; }
         .math-btn:active { transform: translateY(2px); box-shadow: none; }
+        .user-details { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #475569; font-size: 11px; color: #94a3b8; line-height: 1.6; }
 
-        .req-item { background: #fff; color: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 6px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .req-item h2 { margin: 8px 0; font-size: 22px; color: #1e293b; font-weight: 800; }
-        .img-preview { width: 100%; height: 160px; object-fit: contain; background: #000; border-radius: 6px; margin: 8px 0; border: 1px solid #ddd; cursor: zoom-in; }
-        
-        .action-btn { padding: 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; flex: 1; text-transform: uppercase; }
+        /* Requests */
+        .req-item { background: #fff; color: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 6px solid #f59e0b; }
+        .req-item h2 { margin: 8px 0; font-size: 22px; font-weight: 800; }
+        .action-btn { padding: 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; flex: 1; }
         .btn-appr { background: #10b981; color: white; }
         .btn-rej { background: #ef4444; color: white; }
 
-        .chat-card { background: #fff; color: #1e293b; border-radius: 10px; margin-bottom: 15px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .chat-history { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f1f5f9; scroll-behavior: smooth; }
-        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 12px; line-height: 1.4; word-wrap: break-word; }
+        /* Chats */
+        .chat-card { background: #fff; color: #1e293b; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        .chat-history { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f1f5f9; }
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 12px; }
         .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; border-bottom-right-radius: 2px; }
-        .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; color: #1e293b; }
-        
+        .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; }
         .reply-box { padding: 10px; display: flex; gap: 8px; background: #fff; border-top: 1px solid #e2e8f0; }
-        .reply-box input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline:none; font-size: 13px; }
+        .reply-box input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline:none; }
     </style>
 </head>
 <body>
 
     <div class="admin-nav">
-        <b style="font-size: 15px; letter-spacing: 1px;">SBA COMMAND V8.2</b><br>
+        <b style="font-size: 15px;">SBA COMMAND V8.2</b><br>
         <span id="adminEmail" style="font-size: 10px; color: #38bdf8; font-weight: bold;">AUTHENTICATING...</span>
     </div>
 
@@ -65,14 +55,14 @@
     </div>
 
     <div class="container">
-        <div class="section-title">👤 ALL CLIENTS</div>
-        <div id="userList"><p style="text-align:center; color:#475569;">Accessing Database...</p></div>
-
-        <div class="section-title">⚡ ACTION REQUIRED</div>
+        <div class="section-title">⚡ ACTION REQUIRED (PENDING)</div>
         <div id="requestFeed"></div>
 
-        <div class="section-title">💬 LIVE SUPPORT</div>
+        <div class="section-title">💬 LIVE SUPPORT CHATS</div>
         <div id="chatFeed"></div>
+
+        <div class="section-title">👤 ALL CLIENTS DIRECTORY</div>
+        <div id="userList"></div>
     </div>
 
     <script type="module">
@@ -96,38 +86,32 @@
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === "liger4683@gmail.com") {
                 document.getElementById('adminEmail').innerText = "SYSTEM ADMIN: " + user.email.toUpperCase();
-                startListeners();
-            } else { 
-                window.location.href = "index.html"; 
-            }
+                initDashboard();
+            } else { window.location.href = "index.html"; }
         });
 
-        function startListeners() {
-            // 1. ALL CLIENTS LISTENER
+        function initDashboard() {
+            // 1. ALL USERS & STATS
             onSnapshot(collection(db, "users"), (snap) => {
                 const list = document.getElementById('userList');
-                let totalCash = 0;
-                list.innerHTML = "";
-                
+                let totalCash = 0; list.innerHTML = "";
                 snap.forEach(d => {
                     const u = d.data();
                     let bal = parseFloat(u.balance) || 0;
                     totalCash += bal;
-
                     const card = document.createElement('div');
                     card.className = 'user-card';
                     card.innerHTML = `
                         <div class="user-main" onclick="let det = this.nextElementSibling; det.style.display = (det.style.display === 'none') ? 'block' : 'none'">
-                            <div class="user-info">
+                            <div>
                                 <b>${u.fullName || u.email || 'NEW CLIENT'}</b>
                                 <div class="bal">$${bal.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
                             </div>
                             <button class="math-btn" onclick="event.stopPropagation(); window.doMath('${d.id}')">±</button>
                         </div>
-                        <div class="user-details" style="display:none">
+                        <div class="user-details">
                             <b>EMAIL:</b> <span style="color:#fff">${u.email}</span><br>
-                            <b>KYC STATUS:</b> <span style="color:#38bdf8">${u.kycStatus || 'NOT STARTED'}</span><br>
-                            <b>PHONE:</b> ${u.phone || 'N/A'}<br>
+                            <b>KYC:</b> ${u.kycStatus || 'PENDING'}<br>
                             <b>UID:</b> <small>${d.id}</small>
                         </div>`;
                     list.appendChild(card);
@@ -136,36 +120,19 @@
                 document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString('en-US', {maximumFractionDigits: 0});
             });
 
-            // 2. REQUESTS FEED
+            // 2. PENDING REQUESTS
             onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
                 const feed = document.getElementById('requestFeed');
                 let count = 0; feed.innerHTML = "";
-                
                 snap.forEach(d => {
                     const r = d.data();
                     if(r.status !== "PENDING") return;
                     count++;
-                    const isKyc = r.type && r.type.includes("KYC");
-                    const isWire = r.type && r.type.includes("WIRE");
-
                     feed.innerHTML += `
-                        <div class="req-item" style="${isWire ? 'border-left-color: #ef4444;' : ''}">
-                            <div style="font-size:10px; color:#64748b; font-weight:bold;">CLIENT: ${r.userName || r.userEmail}</div>
-                            <div style="font-weight:bold; font-size:14px; color: var(--admin-blue);">${(r.type || "REQUEST").replace(/_/g, ' ')}</div>
+                        <div class="req-item">
+                            <small>FROM: ${r.userName || r.userEmail}</small>
+                            <div style="font-weight:bold; color: var(--admin-blue);">${(r.type || "REQUEST").replace(/_/g, ' ')}</div>
                             <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
-                            
-                            ${isWire ? `<div style="font-size:11px; color:#475569; margin:8px 0; padding:8px; background:#f1f5f9; border-radius:4px;">
-                                🏦 <b>BANK:</b> ${r.bankName}<br>
-                                📍 <b>ROUTING:</b> ${r.routing}<br>
-                                💳 <b>ACCOUNT:</b> ${r.account}
-                            </div>` : ''}
-
-                            ${isKyc ? `
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:5px;">
-                                    <img src="${r.frontImg}" class="img-preview" onclick="window.open(this.src)">
-                                    <img src="${r.backImg}" class="img-preview" onclick="window.open(this.src)">
-                                </div>` : ''}
-
                             <div style="display:flex; gap:8px; margin-top:12px;">
                                 <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">APPROVE</button>
                                 <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">DECLINE</button>
@@ -173,17 +140,17 @@
                         </div>`;
                 });
                 document.getElementById('stat-reqs').innerText = count;
-                if(count === 0) feed.innerHTML = "<p style='text-align:center; color:#475569; padding: 20px;'>No pending tasks.</p>";
+                if(count === 0) feed.innerHTML = "<p style='text-align:center; color:#475569;'>No pending tasks.</p>";
             });
 
-            // 3. CHAT SYNC
+            // 3. CHAT SYNC (ALL CHATS)
             onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snap) => {
                 const chatFeed = document.getElementById('chatFeed');
                 const groups = {};
                 snap.forEach(sDoc => {
                     const m = sDoc.data();
                     if (!m.userId) return;
-                    if (!groups[m.userId]) groups[m.userId] = { name: m.userName || m.userEmail || "Client", msgs: [] };
+                    if (!groups[m.userId]) groups[m.userId] = { name: m.userName || m.userEmail, msgs: [] };
                     groups[m.userId].msgs.push(m);
                 });
                 chatFeed.innerHTML = "";
@@ -191,20 +158,14 @@
                     const g = groups[uid];
                     chatFeed.innerHTML += `
                         <div class="chat-card">
-                            <div style="padding:8px 12px; background:#e2e8f0; font-weight:bold; color:var(--admin-blue); font-size:11px;">
-                                CHAT: ${g.name.toUpperCase()}
-                            </div>
-                            <div class="chat-history" id="chat-box-${uid}">${g.msgs.map(m => `<div class="msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>`).join('')}</div>
+                            <div style="padding:8px 12px; background:#e2e8f0; font-weight:bold; font-size:11px;">CHAT: ${g.name.toUpperCase()}</div>
+                            <div class="chat-history" id="box-${uid}">${g.msgs.map(m => `<div class="msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>`).join('')}</div>
                             <div class="reply-box">
-                                <input type="text" id="reply-input-${uid}" placeholder="Type reply...">
+                                <input type="text" id="in-${uid}" placeholder="Type message...">
                                 <button onclick="window.adminReply('${uid}', '${g.name}')" class="action-btn btn-appr" style="flex:0; padding:8px 20px;">SEND</button>
                             </div>
                         </div>`;
-                    // Scroll to bottom
-                    setTimeout(() => {
-                        const box = document.getElementById(`chat-box-${uid}`);
-                        if(box) box.scrollTop = box.scrollHeight;
-                    }, 100);
+                    setTimeout(() => { const b = document.getElementById(`box-${uid}`); if(b) b.scrollTop = b.scrollHeight; }, 100);
                 });
             });
         }
@@ -213,8 +174,8 @@
             const userRef = doc(db, "users", uid);
             const userSnap = await getDoc(userRef);
             const currentBal = parseFloat(userSnap.data().balance) || 0;
-            const val = prompt(`Adjust Balance for ${userSnap.data().fullName || 'User'}:\nCurrent: $${currentBal.toLocaleString()}\n\nUse + to add, - to subtract:`, "0");
-            if(val !== null && val !== "" && !isNaN(val)) {
+            const val = prompt(`Adjust Balance for ${userSnap.data().fullName || 'User'}:\nCurrent: $${currentBal}\n\nAdd: 100 | Sub: -100`, "0");
+            if(val && !isNaN(val)) {
                 await updateDoc(userRef, { balance: parseFloat((currentBal + parseFloat(val)).toFixed(2)) });
             }
         };
@@ -222,12 +183,11 @@
         window.processTask = async (docId, uid, action, type, amt) => {
             const uRef = doc(db, "users", uid);
             const rRef = doc(db, "requests", docId);
-            
             try {
                 if (action === 'APPROVE') {
-                    if (type.includes("KYC")) { await updateDoc(uRef, { kycStatus: "APPROVED" }); }
+                    if (type.includes("KYC")) await updateDoc(uRef, { kycStatus: "APPROVED" });
                     await updateDoc(rRef, { status: "SUCCESSFUL" });
-                    alert("Task Approved.");
+                    alert("Approved.");
                 } else {
                     if (type.includes("WIRE")) {
                         const snap = await getDoc(uRef);
@@ -235,13 +195,13 @@
                         await updateDoc(uRef, { balance: parseFloat((bal + parseFloat(amt)).toFixed(2)) });
                     }
                     await updateDoc(rRef, { status: "REJECTED" });
-                    alert("Task Declined & Refunded.");
+                    alert("Rejected & Refunded.");
                 }
             } catch (e) { alert("Error: " + e.message); }
         };
 
         window.adminReply = async (uid, name) => {
-            const el = document.getElementById(`reply-input-${uid}`);
+            const el = document.getElementById(`in-${uid}`);
             if(!el.value) return;
             await addDoc(collection(db, "support_tickets"), {
                 userId: uid, userName: name, message: el.value, sender: "ADMIN", timestamp: serverTimestamp()
