@@ -7,66 +7,46 @@
     <style>
         :root { --admin-red: #ba0c2f; --admin-blue: #00274c; --bg: #0f172a; }
         body { background: var(--bg); color: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 13px; padding-bottom: 50px; }
-        
-        .admin-nav { background: #1e293b; padding: 12px; border-bottom: 2px solid var(--admin-red); text-align: center; position: sticky; top:0; z-index:100; }
-        
+        .admin-nav { background: #1e293b; padding: 15px; border-bottom: 2px solid var(--admin-red); text-align: center; position: sticky; top:0; z-index:100; }
         .stats-wrapper { display: flex; gap: 8px; padding: 10px; overflow-x: auto; }
-        .stat-card { flex: 1; background: #334155; padding: 10px; border-radius: 8px; text-align: center; min-width: 100px; border: 1px solid #475569; }
-        .stat-card h3 { font-size: 10px; margin: 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-card p { margin: 4px 0 0; font-size: 16px; font-weight: bold; color: #38bdf8; }
-
-        .container { padding: 8px; max-width: 600px; margin: 0 auto; }
-        .section-title { font-size: 11px; color: #38bdf8; text-transform: uppercase; margin: 20px 0 10px; font-weight: bold; display:flex; align-items:center; gap:8px; border-left: 3px solid #38bdf8; padding-left: 8px; }
-        
-        .user-card { background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #334155; }
-        .user-main { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .user-info b { font-size: 14px; color: #fff; display: block; }
-        .bal { color: #10b981; font-weight: bold; font-size: 15px; margin-top: 2px; }
-        
-        .user-details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #475569; font-size: 11px; color: #94a3b8; line-height: 1.6; }
-        
-        .math-btn { 
-            background: #38bdf8; color: #0f172a; border: none; 
-            width: 36px; height: 36px; border-radius: 8px;
-            font-size: 18px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 3px 0 #0284c7; transition: 0.1s;
-        }
-        .math-btn:active { transform: translateY(2px); box-shadow: none; }
-
-        .req-item { background: #fff; color: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 6px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .req-item h2 { margin: 8px 0; font-size: 22px; color: #1e293b; font-weight: 800; }
-        .img-preview { width: 100%; height: 160px; object-fit: contain; background: #000; border-radius: 6px; margin: 8px 0; border: 1px solid #ddd; cursor: zoom-in; }
-        
-        .action-btn { padding: 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; flex: 1; text-transform: uppercase; }
+        .stat-card { flex: 1; background: #334155; padding: 12px; border-radius: 8px; text-align: center; min-width: 100px; border: 1px solid #475569; }
+        .stat-card h3 { font-size: 10px; margin: 0; color: #94a3b8; text-transform: uppercase; }
+        .stat-card p { margin: 5px 0 0; font-size: 18px; font-weight: bold; color: #38bdf8; }
+        .container { padding: 10px; max-width: 600px; margin: 0 auto; }
+        .section-title { font-size: 11px; color: #38bdf8; text-transform: uppercase; margin: 20px 0 10px; font-weight: bold; border-left: 3px solid #38bdf8; padding-left: 8px; }
+        .user-card { background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #334155; }
+        .user-main { display: flex; justify-content: space-between; align-items: center; }
+        .bal { color: #10b981; font-weight: bold; font-size: 16px; }
+        .math-btn { background: #38bdf8; color: #0f172a; border: none; width: 40px; height: 40px; border-radius: 8px; font-size: 20px; font-weight: 900; }
+        .req-item { background: #fff; color: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 6px solid #f59e0b; }
+        .img-preview { width: 100%; height: 180px; object-fit: contain; background: #000; border-radius: 6px; margin: 10px 0; border: 1px solid #ddd; }
+        .action-btn { padding: 14px; border-radius: 8px; font-size: 12px; font-weight: 800; border: none; flex: 1; text-transform: uppercase; }
         .btn-appr { background: #10b981; color: white; }
         .btn-rej { background: #ef4444; color: white; }
-
-        .chat-card { background: #fff; color: #1e293b; border-radius: 10px; margin-bottom: 15px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .chat-history { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f1f5f9; scroll-behavior: smooth; }
-        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 12px; line-height: 1.4; word-wrap: break-word; }
-        .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; border-bottom-right-radius: 2px; }
-        .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; color: #1e293b; }
-        
-        .reply-box { padding: 10px; display: flex; gap: 8px; background: #fff; border-top: 1px solid #e2e8f0; }
-        .reply-box input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline:none; font-size: 13px; }
+        .chat-card { background: #fff; color: #1e293b; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        .chat-history { height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f1f5f9; }
+        .msg { max-width: 85%; padding: 10px; border-radius: 12px; font-size: 13px; line-height: 1.4; }
+        .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; }
+        .msg.user { align-self: flex-start; background: #e2e8f0; color: #1e293b; }
+        .reply-box { padding: 10px; display: flex; gap: 8px; background: #fff; border-top: 1px solid #ddd; }
+        .reply-box input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 6px; }
     </style>
 </head>
 <body>
-
     <div class="admin-nav">
-        <b style="font-size: 15px; letter-spacing: 1px;">SBA COMMAND V8.2</b><br>
-        <span id="adminEmail" style="font-size: 10px; color: #38bdf8; font-weight: bold;">AUTHENTICATING...</span>
+        <b>SBA COMMAND V8.2</b><br>
+        <span id="adminEmail" style="font-size: 10px; color: #38bdf8;">AUTHENTICATING...</span>
     </div>
 
     <div class="stats-wrapper">
-        <div class="stat-card"><h3>Total Clients</h3><p id="stat-users">0</p></div>
-        <div class="stat-card"><h3>Active Tasks</h3><p id="stat-reqs">0</p></div>
-        <div class="stat-card"><h3>Vault Total</h3><p id="stat-cash">$0</p></div>
+        <div class="stat-card"><h3>Clients</h3><p id="stat-users">0</p></div>
+        <div class="stat-card"><h3>Tasks</h3><p id="stat-reqs">0</p></div>
+        <div class="stat-card"><h3>Vault</h3><p id="stat-cash">$0</p></div>
     </div>
 
     <div class="container">
         <div class="section-title">👤 ALL CLIENTS</div>
-        <div id="userList"><p style="text-align:center; color:#475569;">Accessing Database...</p></div>
+        <div id="userList"></div>
 
         <div class="section-title">⚡ ACTION REQUIRED</div>
         <div id="requestFeed"></div>
@@ -78,7 +58,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, doc, updateDoc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
@@ -95,158 +75,83 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === "liger4683@gmail.com") {
-                document.getElementById('adminEmail').innerText = "SYSTEM ADMIN: " + user.email.toUpperCase();
+                document.getElementById('adminEmail').innerText = "ADMIN: " + user.email.toUpperCase();
                 startListeners();
-            } else { 
-                window.location.href = "index.html"; 
-            }
+            } else { window.location.href = "index.html"; }
         });
 
         function startListeners() {
-            // 1. ALL CLIENTS LISTENER
+            // 1. Clients List
             onSnapshot(collection(db, "users"), (snap) => {
                 const list = document.getElementById('userList');
-                let totalCash = 0;
-                list.innerHTML = "";
-                
+                let total = 0; list.innerHTML = "";
                 snap.forEach(d => {
                     const u = d.data();
-                    let bal = parseFloat(u.balance) || 0;
-                    totalCash += bal;
-
-                    const card = document.createElement('div');
-                    card.className = 'user-card';
-                    card.innerHTML = `
-                        <div class="user-main" onclick="let det = this.nextElementSibling; det.style.display = (det.style.display === 'none') ? 'block' : 'none'">
-                            <div class="user-info">
-                                <b>${u.fullName || u.email || 'NEW CLIENT'}</b>
-                                <div class="bal">$${bal.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                    let b = parseFloat(u.balance) || 0; total += b;
+                    list.innerHTML += `
+                        <div class="user-card">
+                            <div class="user-main">
+                                <div><b>${u.fullName || u.email}</b><div class="bal">$${b.toLocaleString()}</div></div>
+                                <button class="math-btn" onclick="window.doMath('${d.id}')">±</button>
                             </div>
-                            <button class="math-btn" onclick="event.stopPropagation(); window.doMath('${d.id}')">±</button>
-                        </div>
-                        <div class="user-details" style="display:none">
-                            <b>EMAIL:</b> <span style="color:#fff">${u.email}</span><br>
-                            <b>KYC STATUS:</b> <span style="color:#38bdf8">${u.kycStatus || 'NOT STARTED'}</span><br>
-                            <b>PHONE:</b> ${u.phone || 'N/A'}<br>
-                            <b>UID:</b> <small>${d.id}</small>
                         </div>`;
-                    list.appendChild(card);
                 });
                 document.getElementById('stat-users').innerText = snap.size;
-                document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString('en-US', {maximumFractionDigits: 0});
+                document.getElementById('stat-cash').innerText = "$" + total.toLocaleString();
             });
 
-            // 2. REQUESTS FEED
-            onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
+            // 2. Tasks Feed (Simple Query for instant loading)
+            onSnapshot(collection(db, "requests"), (snap) => {
                 const feed = document.getElementById('requestFeed');
                 let count = 0; feed.innerHTML = "";
-                
                 snap.forEach(d => {
                     const r = d.data();
                     if(r.status !== "PENDING") return;
                     count++;
-                    const isKyc = r.type && r.type.includes("KYC");
-                    const isWire = r.type && r.type.includes("WIRE");
-
+                    const isKyc = r.type?.includes("KYC");
                     feed.innerHTML += `
-                        <div class="req-item" style="${isWire ? 'border-left-color: #ef4444;' : ''}">
-                            <div style="font-size:10px; color:#64748b; font-weight:bold;">CLIENT: ${r.userName || r.userEmail}</div>
-                            <div style="font-weight:bold; font-size:14px; color: var(--admin-blue);">${(r.type || "REQUEST").replace(/_/g, ' ')}</div>
+                        <div class="req-item">
+                            <small>${r.userEmail || 'User'}</small>
+                            <div style="font-weight:bold; color:#00274c;">${r.type}</div>
                             <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
-                            
-                            ${isWire ? `<div style="font-size:11px; color:#475569; margin:8px 0; padding:8px; background:#f1f5f9; border-radius:4px;">
-                                🏦 <b>BANK:</b> ${r.bankName}<br>
-                                📍 <b>ROUTING:</b> ${r.routing}<br>
-                                💳 <b>ACCOUNT:</b> ${r.account}
-                            </div>` : ''}
-
-                            ${isKyc ? `
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:5px;">
-                                    <img src="${r.frontImg}" class="img-preview" onclick="window.open(this.src)">
-                                    <img src="${r.backImg}" class="img-preview" onclick="window.open(this.src)">
-                                </div>` : ''}
-
-                            <div style="display:flex; gap:8px; margin-top:12px;">
-                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">APPROVE</button>
-                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">DECLINE</button>
+                            ${isKyc ? `<img src="${r.frontImg}" class="img-preview">` : ''}
+                            <div style="display:flex; gap:8px; margin-top:10px;">
+                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount})" class="action-btn btn-appr">Approve</button>
+                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount})" class="action-btn btn-rej">Decline</button>
                             </div>
                         </div>`;
                 });
                 document.getElementById('stat-reqs').innerText = count;
-                if(count === 0) feed.innerHTML = "<p style='text-align:center; color:#475569; padding: 20px;'>No pending tasks.</p>";
-            });
-
-            // 3. CHAT SYNC
-            onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snap) => {
-                const chatFeed = document.getElementById('chatFeed');
-                const groups = {};
-                snap.forEach(sDoc => {
-                    const m = sDoc.data();
-                    if (!m.userId) return;
-                    if (!groups[m.userId]) groups[m.userId] = { name: m.userName || m.userEmail || "Client", msgs: [] };
-                    groups[m.userId].msgs.push(m);
-                });
-                chatFeed.innerHTML = "";
-                Object.keys(groups).forEach(uid => {
-                    const g = groups[uid];
-                    chatFeed.innerHTML += `
-                        <div class="chat-card">
-                            <div style="padding:8px 12px; background:#e2e8f0; font-weight:bold; color:var(--admin-blue); font-size:11px;">
-                                CHAT: ${g.name.toUpperCase()}
-                            </div>
-                            <div class="chat-history" id="chat-box-${uid}">${g.msgs.map(m => `<div class="msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>`).join('')}</div>
-                            <div class="reply-box">
-                                <input type="text" id="reply-input-${uid}" placeholder="Type reply...">
-                                <button onclick="window.adminReply('${uid}', '${g.name}')" class="action-btn btn-appr" style="flex:0; padding:8px 20px;">SEND</button>
-                            </div>
-                        </div>`;
-                    // Scroll to bottom
-                    setTimeout(() => {
-                        const box = document.getElementById(`chat-box-${uid}`);
-                        if(box) box.scrollTop = box.scrollHeight;
-                    }, 100);
-                });
+                if(count === 0) feed.innerHTML = "<p style='text-align:center;color:#64748b'>All clear.</p>";
             });
         }
 
         window.doMath = async (uid) => {
-            const userRef = doc(db, "users", uid);
-            const userSnap = await getDoc(userRef);
-            const currentBal = parseFloat(userSnap.data().balance) || 0;
-            const val = prompt(`Adjust Balance for ${userSnap.data().fullName || 'User'}:\nCurrent: $${currentBal.toLocaleString()}\n\nUse + to add, - to subtract:`, "0");
-            if(val !== null && val !== "" && !isNaN(val)) {
-                await updateDoc(userRef, { balance: parseFloat((currentBal + parseFloat(val)).toFixed(2)) });
+            const val = prompt("Enter amount to adjust (+ to add, - to subtract):");
+            if(val) {
+                const ref = doc(db, "users", uid);
+                const s = await getDoc(ref);
+                const newBal = (parseFloat(s.data().balance || 0) + parseFloat(val)).toFixed(2);
+                await updateDoc(ref, { balance: parseFloat(newBal) });
             }
         };
 
-        window.processTask = async (docId, uid, action, type, amt) => {
+        window.processTask = async (id, uid, act, type, amt) => {
+            const rRef = doc(db, "requests", id);
             const uRef = doc(db, "users", uid);
-            const rRef = doc(db, "requests", docId);
-            
-            try {
-                if (action === 'APPROVE') {
-                    if (type.includes("KYC")) { await updateDoc(uRef, { kycStatus: "APPROVED" }); }
-                    await updateDoc(rRef, { status: "SUCCESSFUL" });
-                    alert("Task Approved.");
-                } else {
-                    if (type.includes("WIRE")) {
-                        const snap = await getDoc(uRef);
-                        const bal = parseFloat(snap.data().balance || 0);
-                        await updateDoc(uRef, { balance: parseFloat((bal + parseFloat(amt)).toFixed(2)) });
-                    }
-                    await updateDoc(rRef, { status: "REJECTED" });
-                    alert("Task Declined & Refunded.");
+            if(act === 'APPROVE') {
+                await updateDoc(rRef, { status: "SUCCESSFUL" });
+                if(type.includes("KYC")) await updateDoc(uRef, { kycStatus: "APPROVED" });
+                alert("Approved!");
+            } else {
+                await updateDoc(rRef, { status: "REJECTED" });
+                if(type.includes("WIRE")) {
+                    const s = await getDoc(uRef);
+                    const refund = (parseFloat(s.data().balance || 0) + parseFloat(amt)).toFixed(2);
+                    await updateDoc(uRef, { balance: parseFloat(refund) });
                 }
-            } catch (e) { alert("Error: " + e.message); }
-        };
-
-        window.adminReply = async (uid, name) => {
-            const el = document.getElementById(`reply-input-${uid}`);
-            if(!el.value) return;
-            await addDoc(collection(db, "support_tickets"), {
-                userId: uid, userName: name, message: el.value, sender: "ADMIN", timestamp: serverTimestamp()
-            });
-            el.value = "";
+                alert("Rejected & Refunded.");
+            }
         };
     </script>
 </body>
