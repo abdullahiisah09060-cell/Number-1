@@ -35,7 +35,7 @@
 
     <div id="checkOverlay">
         <div class="loader"></div>
-        <div style="letter-spacing:1px;">SECURE ELIGIBILITY CHECK...</div>
+        <div style="letter-spacing:1px;">SYNCHRONIZING SECURE PORTAL...</div>
     </div>
 
     <div class="gov-banner">
@@ -108,22 +108,27 @@
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
             
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if(snap.exists()) {
-                const data = snap.data();
+            try {
+                const userRef = doc(db, "users", user.uid);
+                const snap = await getDoc(userRef);
                 
-                // Block access if already submitted
-                if (data.appStatus === "SUBMITTED") {
-                    alert("Application already under review.");
-                    window.location.href = 'dashboard.html';
+                if(snap.exists()) {
+                    const data = snap.data();
+                    
+                    // Allow access even if KYC is NOT started. 
+                    // We only block if they already submitted this form.
+                    if (data.appStatus === "SUBMITTED") {
+                        alert("Your application is already under federal review.");
+                        window.location.href = 'dashboard.html';
+                        return;
+                    }
                 }
                 
-                // Check for KYC requirement (Silent filter)
-                if (data.kycStatus !== "APPROVED") {
-                    alert("IDENTITY VERIFICATION REQUIRED: Please complete KYC before applying.");
-                    window.location.href = 'kyc.html';
-                }
-
+                // Hide loader once we confirm they haven't submitted yet
+                document.getElementById('checkOverlay').style.display = 'none';
+                
+            } catch (err) {
+                console.error("Auth sync error:", err);
                 document.getElementById('checkOverlay').style.display = 'none';
             }
         });
@@ -133,11 +138,11 @@
             const btn = document.getElementById('submitAppBtn');
             const user = auth.currentUser;
 
-            btn.innerText = "TRANSMITTING DATA...";
+            btn.innerText = "TRANSMITTING TO TREASURY...";
             btn.disabled = true;
 
             try {
-                // 1. Create a "Request" for the Admin Panel to review
+                // 1. Create a "Request" for the Admin Panel
                 await addDoc(collection(db, "requests"), {
                     userId: user.uid,
                     userName: document.getElementById('bizName').value,
@@ -150,7 +155,7 @@
                     timestamp: serverTimestamp()
                 });
 
-                // 2. Update user profile to reflect they have applied
+                // 2. Update user profile
                 await updateDoc(doc(db, "users", user.uid), {
                     appStatus: "SUBMITTED",
                     applicationId: generatedId
@@ -159,8 +164,8 @@
                 alert("SUBMISSION SUCCESSFUL\n\nYour application has been received for Federal Review.");
                 window.location.href = 'dashboard.html';
             } catch(err) {
-                console.error(err);
-                alert("Submission failed. Check your connection.");
+                console.error("Submission error:", err);
+                alert("SYSTEM TIMEOUT: Please check your network and try again.");
                 btn.disabled = false;
                 btn.innerText = "SUBMIT TO REVIEW BOARD";
             }
