@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA MASTER | V8.6 COMMAND PRO</title>
+    <title>SBA MASTER | V8.7 COMMAND PRO</title>
     <style>
         :root { --admin-red: #ba0c2f; --admin-blue: #00274c; --bg: #0f172a; }
         body { background: var(--bg); color: #f8fafc; font-family: sans-serif; margin: 0; font-size: 13px; padding-bottom: 50px; }
@@ -16,35 +16,17 @@
         .stat-card p { margin: 2px 0 0; font-size: 14px; font-weight: bold; color: #38bdf8; }
 
         .container { padding: 8px; max-width: 600px; margin: 0 auto; }
-        .section-title { font-size: 10px; color: #38bdf8; text-transform: uppercase; margin: 15px 0 8px; font-weight: bold; display:flex; align-items:center; gap:5px; }
+        .section-title { font-size: 10px; color: #38bdf8; text-transform: uppercase; margin: 15px 0 8px; font-weight: bold; display:flex; align-items:center; gap:5px; border-left: 3px solid #38bdf8; padding-left: 8px;}
         
-        .user-card { 
-            background: #1e293b; 
-            padding: 10px; 
-            border-radius: 8px; 
-            margin-bottom: 6px; 
-            border: 1px solid #334155;
-        }
+        .user-card { background: #1e293b; padding: 10px; border-radius: 8px; margin-bottom: 6px; border: 1px solid #334155; }
         .user-main { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .user-info b { font-size: 14px; color: #fff; display: block; }
         .bal { color: #10b981; font-weight: bold; font-size: 14px; }
         
-        .user-details { 
-            display: none; 
-            margin-top: 10px; 
-            padding-top: 10px; 
-            border-top: 1px dashed #475569; 
-            font-size: 11px;
-            color: #94a3b8;
-        }
+        .user-details { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #475569; font-size: 11px; color: #94a3b8; }
         .user-card.active .user-details { display: block; }
         
-        .math-btn { 
-            background: #38bdf8; color: #0f172a; border: none; 
-            width: 32px; height: 32px; border-radius: 50%;
-            font-size: 14px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 2px 0 #0284c7;
-        }
+        .math-btn { background: #38bdf8; color: #0f172a; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 2px 0 #0284c7; }
 
         .req-item { background: #fff; color: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #f59e0b; }
         .req-item h2 { margin: 5px 0; font-size: 20px; color: #1e293b; font-weight: 800; }
@@ -52,12 +34,12 @@
         
         .action-btn { padding: 10px; border-radius: 6px; font-size: 11px; font-weight: bold; border: none; cursor: pointer; flex: 1; }
         .btn-appr { background: #10b981; color: white; }
-        .btn-rej { background: #64748b; color: white; }
+        .btn-rej { background: #ef4444; color: white; }
         .btn-res { background: #f59e0b; color: white; }
 
         .chat-card { background: #fff; color: #1e293b; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
         .chat-history { height: 200px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 5px; background: #f1f5f9; }
-        .msg { max-width: 85%; padding: 7px 11px; border-radius: 12px; font-size: 12px; line-height: 1.3; position: relative; }
+        .msg { max-width: 85%; padding: 7px 11px; border-radius: 12px; font-size: 12px; line-height: 1.3; }
         .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; border-bottom-right-radius: 2px; }
         .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; color: #000; }
         
@@ -68,8 +50,8 @@
 <body>
 
     <div class="admin-nav">
-        <b style="font-size: 14px;">COMMAND V8.6 | MASTER PRO</b><br>
-        <span id="adminEmail" style="font-size: 9px; color: #38bdf8;">SYNCING DATA...</span>
+        <b style="font-size: 14px;">COMMAND V8.7 | MASTER PRO</b><br>
+        <span id="adminEmail" style="font-size: 9px; color: #38bdf8;">SYNCING...</span>
     </div>
 
     <div class="stats-wrapper">
@@ -79,11 +61,11 @@
     </div>
 
     <div class="container">
+        <div class="section-title">⚡ 3 MOST RECENT TASKS</div>
+        <div id="recentRequests"></div>
+
         <div class="section-title">👤 ALL CLIENTS (Tap to expand)</div>
         <div id="userList"></div>
-
-        <div class="section-title">⚡ ACTION REQUIRED</div>
-        <div id="requestFeed"></div>
 
         <div class="section-title">💬 SUPPORT CHATS</div>
         <div id="chatFeed"></div>
@@ -92,9 +74,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, getDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, limit, doc, updateDoc, getDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // Your specific config
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
             authDomain: "sba-portal-2026-f1253.firebaseapp.com",
@@ -145,36 +126,38 @@
                 document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString();
             });
 
-            // LOAD ALL TASKS
-            onSnapshot(collection(db, "requests"), (snap) => {
-                const feed = document.getElementById('requestFeed');
-                let count = 0; feed.innerHTML = "";
+            // LOAD RECENT TASKS (TOP 3) + ALL PENDING
+            onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
+                const recentFeed = document.getElementById('recentRequests');
+                recentFeed.innerHTML = "";
+                let count = 0;
+                let displayed = 0;
+
                 snap.forEach(d => {
                     const r = d.data();
-                    if(r.status !== "PENDING") return;
-                    count++;
-                    const isKyc = r.type && r.type.includes("KYC");
-                    feed.innerHTML += `
-                        <div class="req-item">
-                            <div style="font-size:10px; color:#64748b;">${r.userName || r.userEmail}</div>
-                            <div style="font-weight:bold; font-size:14px;">${r.type}</div>
-                            <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
-                            ${isKyc ? `
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-                                    <img src="${r.frontImg}" class="img-preview" onclick="window.open(this.src)">
-                                    <img src="${r.backImg}" class="img-preview" onclick="window.open(this.src)">
-                                </div>` : ''}
-                            <div style="display:flex; gap:5px; margin-top:10px;">
-                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">APPROVE</button>
-                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">REJECT</button>
-                                ${isKyc ? `<button onclick="window.resendKYC('${d.id}', '${r.userId}')" class="action-btn btn-res">RESEND</button>` : ''}
-                            </div>
-                        </div>`;
+                    if(r.status === "PENDING") {
+                        count++;
+                        if(displayed < 3) {
+                            const isKyc = r.type && r.type.includes("KYC");
+                            recentFeed.innerHTML += `
+                                <div class="req-item">
+                                    <div style="font-size:10px; color:#64748b;">${r.userName || r.userEmail}</div>
+                                    <div style="font-weight:bold; font-size:14px;">${r.type}</div>
+                                    <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
+                                    ${isKyc ? `<img src="${r.frontImg}" class="img-preview" onclick="window.open(this.src)">` : ''}
+                                    <div style="display:flex; gap:5px; margin-top:10px;">
+                                        <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">APPROVE</button>
+                                        <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">DECLINE</button>
+                                    </div>
+                                </div>`;
+                            displayed++;
+                        }
+                    }
                 });
                 document.getElementById('stat-reqs').innerText = count;
             });
 
-            // LOAD ALL CHATS (Fixed grouping to show legacy/old chats)
+            // LOAD ALL CHATS
             onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snap) => {
                 const chatFeed = document.getElementById('chatFeed');
                 const groups = {};
@@ -213,22 +196,27 @@
         window.processTask = async (docId, uid, action, type, amt) => {
             const uRef = doc(db, "users", uid);
             const rRef = doc(db, "requests", docId);
+            const uSnap = await getDoc(uRef);
+            const currentBal = parseFloat(uSnap.data().balance) || 0;
+
             try {
                 if (action === 'APPROVE') {
+                    // GRANT LOGIC: Add to balance
+                    if (type.toUpperCase().includes("GRANT")) {
+                        await updateDoc(uRef, { balance: currentBal + parseFloat(amt) });
+                    }
                     if (type.includes("KYC")) await updateDoc(uRef, { kycStatus: "APPROVED" });
                     await updateDoc(rRef, { status: "SUCCESSFUL" });
+                    alert("Approved & Balance Updated");
                 } else {
+                    // DECLINE LOGIC: Refund if it was a withdrawal
+                    if (type.toUpperCase().includes("WITHDRAW")) {
+                        await updateDoc(uRef, { balance: currentBal + parseFloat(amt) });
+                    }
                     await updateDoc(rRef, { status: "DECLINED" });
+                    alert("Declined & Refunded");
                 }
-                alert("Task updated!");
             } catch (e) { alert(e.message); }
-        };
-
-        window.resendKYC = async (docId, uid) => {
-            if(confirm("Reset KYC and request new images?")) {
-                await deleteDoc(doc(db, "requests", docId));
-                await updateDoc(doc(db, "users", uid), { kycStatus: "NOT_STARTED" });
-            }
         };
 
         window.adminReply = async (uid, name) => {
