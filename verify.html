@@ -22,7 +22,15 @@
         @keyframes pulse-opacity { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         h2 { color: var(--sba-blue); margin: 0 0 10px 0; font-size: 20px; font-weight: 800; }
-        p { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 25px; }
+        p { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 15px; }
+
+        /* Email Display Box */
+        .email-display {
+            background: #f1f5f9; border-radius: 6px; padding: 10px; margin-bottom: 25px;
+            border: 1px dashed #cbd5e1; display: inline-block; width: 100%;
+        }
+        .email-display span { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 800; display: block; margin-bottom: 4px; }
+        .email-display strong { font-size: 14px; color: var(--sba-blue); word-break: break-all; }
 
         .verification-steps { background: #f8fafc; border-radius: 6px; padding: 15px; text-align: left; border: 1px solid #edf2f7; margin-bottom: 25px; }
         .step { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
@@ -54,26 +62,31 @@
         <div class="card">
             <div id="statusPill" class="status-pill pending pulse">Awaiting Verification</div>
             
-            <h2>Verify Email Address</h2>
-            <p>To access your 2026 allocation dashboard, please confirm your identity via the secure link sent to your inbox.</p>
+            <h2>Verify Your Email</h2>
+            <p>A secure 2026 activation link has been dispatched to the address below:</p>
+
+            <div class="email-display">
+                <span>Registered Email Address</span>
+                <strong id="userEmail">Loading...</strong>
+            </div>
 
             <div class="verification-steps">
                 <div class="step">
                     <div class="step-num">1</div>
-                    <div class="step-text">Locate the email titled <b>"Verify your email"</b>.</div>
+                    <div class="step-text">Open your inbox and find the <b>SBA Verification</b> email.</div>
                 </div>
                 <div class="step">
                     <div class="step-num">2</div>
-                    <div class="step-text">Click the unique <b>verification link</b> inside.</div>
+                    <div class="step-text">Click the unique link to authorize this device.</div>
                 </div>
                 <div class="step">
                     <div class="step-num">3</div>
-                    <div class="step-text">Return here to continue your session.</div>
+                    <div class="step-text">Return here to access your allocation dashboard.</div>
                 </div>
             </div>
 
             <button onclick="location.reload()" class="btn-main">I HAVE VERIFIED</button>
-            <button id="logoutBtn" class="btn-outline">Sign Out</button>
+            <button id="logoutBtn" class="btn-outline">Sign Out / Use Different Email</button>
 
             <div class="spam-notice">
                 Didn't receive the email? Check your <b>Spam folder</b> or 
@@ -102,11 +115,17 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const pill = document.getElementById('statusPill');
+        const emailEl = document.getElementById('userEmail');
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
+            
+            // Show the user's email on the screen
+            emailEl.innerText = user.email;
+
             if (user.emailVerified) { window.location.href = 'welcome.html'; return; }
 
+            // AUTO-CHECK every 3 seconds
             const checkInterval = setInterval(async () => {
                 try {
                     await reload(user);
@@ -116,7 +135,7 @@
                         pill.className = "status-pill verified";
                         setTimeout(() => { window.location.href = 'welcome.html'; }, 1000);
                     }
-                } catch (e) { console.log("Session refreshing..."); }
+                } catch (e) { console.log("Refreshing session..."); }
             }, 3000);
         });
 
@@ -126,10 +145,10 @@
             if (cooldown) return alert("Security link already sent. Please wait 60 seconds.");
             try {
                 await sendEmailVerification(auth.currentUser);
-                alert("Security link resent successfully.");
+                alert("Security link resent successfully to " + auth.currentUser.email);
                 cooldown = true;
                 setTimeout(() => { cooldown = false; }, 60000);
-            } catch(err) { alert("Action restricted. Please try again later."); }
+            } catch(err) { alert("Action restricted. Please check your network or try later."); }
         };
 
         document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => window.location.href = 'index.html');
