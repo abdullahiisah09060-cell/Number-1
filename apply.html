@@ -52,7 +52,7 @@
         <div class="card">
             <h2 style="color: var(--sba-blue); font-size: 22px; margin: 0 0 5px;">Grant Application</h2>
             <p style="font-size:11px; color:#64748b; margin-bottom:20px;">
-                FY2026 EIDR Program | Ref: <span id="appId" style="color: var(--sba-accent); font-weight: 900;"></span>
+                FY2026 EIDR Program | Ref: <span id="appIdDisplay" style="color: var(--sba-accent); font-weight: 900;"></span>
             </p>
             
             <form id="applyForm">
@@ -85,44 +85,73 @@
     </div>
 
     <script type="module">
-        import { auth, db } from './firebase-config.js';
-        import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+            authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+            projectId: "sba-portal-2026-f1253",
+            storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+            messagingSenderId: "363290267220",
+            appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         const generatedId = "SBA-2026-" + Math.floor(100000 + Math.random() * 900000);
-        document.getElementById('appId').innerText = generatedId;
+        document.getElementById('appIdDisplay').innerText = generatedId;
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) window.location.href = 'index.html';
+            if (!user) { window.location.href = 'index.html'; return; }
             
             const snap = await getDoc(doc(db, "users", user.uid));
             if(snap.exists()) {
                 const data = snap.data();
                 
-                // --- LOCK IF ALREADY SUBMITTED ---
-                if (data.appStatus === "SUBMITTED" || data.appStatus === "APPROVED") {
-                    document.getElementById('submitAppBtn').disabled = true;
-                    document.getElementById('submitAppBtn').innerText = "APPLICATION PENDING";
-                    alert("System Notice: You have an application already under review.");
+                // Block access if already submitted
+                if (data.appStatus === "SUBMITTED") {
+                    alert("Application already under review.");
                     window.location.href = 'dashboard.html';
                 }
+                
+                // Check for KYC requirement (Silent filter)
+                if (data.kycStatus !== "APPROVED") {
+                    alert("IDENTITY VERIFICATION REQUIRED: Please complete KYC before applying.");
+                    window.location.href = 'kyc.html';
+                }
 
-                // Hide loader
-                setTimeout(() => document.getElementById('checkOverlay').style.display = 'none', 1000);
+                document.getElementById('checkOverlay').style.display = 'none';
             }
         });
 
         document.getElementById('applyForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitAppBtn');
+            const user = auth.currentUser;
+
             btn.innerText = "TRANSMITTING DATA...";
             btn.disabled = true;
 
             try {
-                await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                    bizName: document.getElementById('bizName').value,
+                // 1. Create a "Request" for the Admin Panel to review
+                await addDoc(collection(db, "requests"), {
+                    userId: user.uid,
+                    userName: document.getElementById('bizName').value,
+                    userEmail: user.email,
+                    type: "GRANT_APPLICATION",
+                    amount: document.getElementById('reqAmt').value,
                     taxId: document.getElementById('taxId').value,
-                    requestedAmount: document.getElementById('reqAmt').value,
+                    reason: document.getElementById('reason').value,
+                    status: "PENDING",
+                    timestamp: serverTimestamp()
+                });
+
+                // 2. Update user profile to reflect they have applied
+                await updateDoc(doc(db, "users", user.uid), {
                     appStatus: "SUBMITTED",
                     applicationId: generatedId
                 });
@@ -130,7 +159,8 @@
                 alert("SUBMISSION SUCCESSFUL\n\nYour application has been received for Federal Review.");
                 window.location.href = 'dashboard.html';
             } catch(err) {
-                alert("Error: " + err.message);
+                console.error(err);
+                alert("Submission failed. Check your connection.");
                 btn.disabled = false;
                 btn.innerText = "SUBMIT TO REVIEW BOARD";
             }
