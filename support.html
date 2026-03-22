@@ -63,9 +63,11 @@
             line-height: 1.5; 
             word-wrap: break-word; 
             position: relative;
+            animation: fadeIn 0.3s ease;
         }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* User side */
         .user { 
             align-self: flex-end; 
             background: var(--sba-accent); 
@@ -73,7 +75,6 @@
             border-bottom-right-radius: 4px; 
         }
         
-        /* Admin side */
         .admin { 
             align-self: flex-start; 
             background: white; 
@@ -99,7 +100,6 @@
             border-radius: 25px; 
             outline: none; 
             font-size: 14px; 
-            transition: border 0.2s;
         }
         
         input:focus { border-color: var(--sba-accent); }
@@ -116,10 +116,7 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            transition: transform 0.1s;
         }
-        
-        .send-btn:active { transform: scale(0.9); }
 
         .exit-btn { 
             background: rgba(255,255,255,0.15); 
@@ -148,11 +145,11 @@
         </div>
 
         <div id="messageDisplay">
-            <div class="bubble admin">Secure channel opening...</div>
+            <div class="bubble admin">Connecting to secure server...</div>
         </div>
 
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Message support..." autocomplete="off">
+            <input type="text" id="userInput" placeholder="Type a message..." autocomplete="off">
             <button id="sendBtn" class="send-btn">➤</button>
         </div>
     </div>
@@ -162,7 +159,6 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, doc, getDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // Use your centralized config
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
             authDomain: "sba-portal-2026-f1253.firebaseapp.com",
@@ -182,11 +178,9 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 1. Get User Profile
                 const uSnap = await getDoc(doc(db, "users", user.uid));
                 if(uSnap.exists()) userName = uSnap.data().fullName || "Applicant";
 
-                // 2. Load and Sync Messages
                 const q = query(
                     collection(db, "support_tickets"), 
                     where("userId", "==", user.uid),
@@ -194,25 +188,20 @@
                 );
 
                 onSnapshot(q, (snapshot) => {
-                    // Initial Welcome + clear previous
-                    display.innerHTML = `<div class="bubble admin"><b>System:</b> Secure connection established. Hello ${userName}, how can we assist you today?</div>`;
+                    display.innerHTML = `<div class="bubble admin"><b>System:</b> Secure connection established. Hello ${userName}, how can we help with your disbursement today?</div>`;
                     
                     snapshot.forEach(doc => {
                         const m = doc.data();
                         const div = document.createElement('div');
                         div.className = `bubble ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
                         
-                        // Handle formatting
                         const prefix = m.sender === 'ADMIN' ? '<b>[OFFICER]:</b> ' : '';
                         div.innerHTML = prefix + m.message;
                         
                         display.appendChild(div);
                     });
                     
-                    // Auto-scroll to bottom
                     display.scrollTop = display.scrollHeight;
-                }, (error) => {
-                    console.error("Sync Error:", error);
                 });
 
             } else { 
@@ -236,7 +225,6 @@
                     timestamp: serverTimestamp()
                 });
             } catch (err) { 
-                alert("Connection lost. Please try again.");
                 console.error(err);
             }
         };
