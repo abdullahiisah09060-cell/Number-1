@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SBA Portal | Secure Dashboard</title>
     <style>
         :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --bg: #f8fafc; }
@@ -44,9 +44,10 @@
         .is-done { border: 2px solid #10b981; background: #f0fdf4; }
         .is-error { border: 2px solid var(--sba-red); background: #fff1f2; }
 
-        .activity-card { background: white; margin: 20px 15px; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; min-height: 100px; }
+        .activity-card { background: white; margin: 20px 15px; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; min-height: 150px; }
         .log-title { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; }
-        .log-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f8fafc; }
+        .log-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f8fafc; }
+        .log-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -71,16 +72,16 @@
     <div class="grid-container">
         <div class="grid-item" onclick="location.href='apply.html'"><span>📝</span><b>Apply</b></div>
         <div class="grid-item" id="transferBtn"><span>🏦</span><b>Transfer</b></div>
-        <div class="grid-item" onclick="location.href='transactions.html'"><span>📊</span><b>Ledger</b></div>
+        <div class="grid-item" onclick="location.href='transactions.html'"><span>📊</span><b>History</b></div>
         <div class="grid-item" id="kycBtn"><span>🛡️</span><b>Verify</b></div>
         <div class="grid-item" onclick="location.href='support.html'"><span>💬</span><b>Support</b></div>
         <div class="grid-item" onclick="location.href='settings.html'"><span>⚙️</span><b>Profile</b></div>
     </div>
 
     <div class="activity-card">
-        <div class="log-title"><span>RECENT TRANSACTIONS (3)</span><span style="color:#10b981;">SECURE</span></div>
+        <div class="log-title"><span>RECENT ACTIVITY (TOP 3)</span><span style="color:#10b981;">SECURE</span></div>
         <div id="activityLog">
-            <p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">Establishing secure connection...</p>
+            <p style="text-align:center; font-size:10px; color:#94a3b8; padding:20px;">Fetching logs...</p>
         </div>
     </div>
 
@@ -107,15 +108,14 @@
 
             document.getElementById('caseId').innerText = `CASE ID: SBA-${user.uid.substring(0,8).toUpperCase()}-2026`;
 
-            // 1. LIVE USER DATA (Balance & KYC)
+            // 1. BALANCE & KYC MONITOR
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
                     let bal = parseFloat(data.balance) || 0;
 
                     document.getElementById('userBalance').innerText = "$" + bal.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
+                        minimumFractionDigits: 2, maximumFractionDigits: 2
                     });
                     
                     const kycStatus = (data.kycStatus || "NOT STARTED").toUpperCase();
@@ -126,9 +126,8 @@
                     if(kycStatus === "APPROVED") {
                         pill.innerText = "● ACCOUNT VERIFIED";
                         pill.className = "status-pill status-verified";
-                        kycBtn.innerHTML = "<span>✅</span><b>Verified</b>";
                         kycBtn.className = "grid-item is-done";
-                        kycBtn.onclick = () => alert("Identity Verification Complete.");
+                        kycBtn.innerHTML = "<span>✅</span><b>Verified</b>";
                         
                         if(bal > 0) {
                             transferBtn.classList.remove('is-locked');
@@ -137,28 +136,21 @@
                         } else {
                             transferBtn.classList.add('is-locked');
                             transferBtn.innerHTML = "<span>🏦</span><b>Transfer</b><div class='lock-icon'>🔒</div>";
-                            transferBtn.onclick = () => alert("Grant funds must be approved first.");
+                            transferBtn.onclick = () => alert("Funds pending approval.");
                         }
-                    } 
-                    else if (["REJECTED", "DECLINED", "DENIED"].includes(kycStatus)) {
+                    } else if (["REJECTED", "DECLINED"].includes(kycStatus)) {
                         pill.innerText = "● VERIFICATION REJECTED";
                         pill.className = "status-pill status-rejected";
                         kycBtn.className = "grid-item is-error";
-                        kycBtn.onclick = () => location.href = 'kyc.html';
-                        transferBtn.classList.add('is-locked');
-                        transferBtn.onclick = () => alert("Verification rejected. Check your profile.");
-                    }
-                    else {
+                    } else {
                         pill.innerText = "● PENDING VERIFICATION";
-                        kycBtn.onclick = () => location.href = 'kyc.html';
                         transferBtn.classList.add('is-locked');
-                        transferBtn.innerHTML = "<span>🏦</span><b>Transfer</b><div class='lock-icon'>🔒</div>";
-                        transferBtn.onclick = () => alert("Please verify your identity to unlock transfers.");
+                        transferBtn.onclick = () => alert("Identity verification required.");
                     }
                 }
             });
 
-            // 2. SHOW 3 MOST RECENT TRANSACTIONS ONLY
+            // 2. RECENT TRANSACTIONS (3 ONLY)
             const qry = query(
                 collection(db, "requests"), 
                 where("userId", "==", user.uid), 
@@ -169,27 +161,27 @@
             onSnapshot(qry, (snap) => {
                 const logBox = document.getElementById('activityLog');
                 if(snap.empty) {
-                    logBox.innerHTML = `<p style="text-align:center; font-size:10px; color:#94a3b8; padding:20px;">No recent transactions found.</p>`;
+                    logBox.innerHTML = `<p style="text-align:center; font-size:10px; color:#94a3b8; padding:20px;">No transaction history found.</p>`;
                     return;
                 }
                 logBox.innerHTML = "";
                 snap.forEach(d => {
                     const r = d.data();
                     const status = (r.status || 'PENDING').toUpperCase();
-                    let statusColor = "#f59e0b"; // Pending/Default
+                    let color = "#f59e0b"; // Orange for pending
                     
-                    if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) statusColor = "#10b981";
-                    if (["DENIED", "FAILED", "REJECTED", "DECLINED"].includes(status)) statusColor = "#ef4444";
+                    if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) color = "#10b981";
+                    if (["FAILED", "REJECTED", "DECLINED"].includes(status)) color = "#ef4444";
 
                     logBox.innerHTML += `
                         <div class="log-item">
                             <div>
-                                <b style="font-size:10px; color:#1e293b;">${(r.type || "FUNDS REQUEST").replace(/_/g, ' ')}</b><br>
-                                <small style="font-size:8px; color:#94a3b8;">REF: ${d.id.substring(0,8).toUpperCase()}</small>
+                                <b style="font-size:11px; color:#1e293b;">${(r.type || "FUNDING").toUpperCase()}</b><br>
+                                <small style="font-size:8px; color:#94a3b8;">${d.id.substring(0,10).toUpperCase()}</small>
                             </div>
                             <div style="text-align:right;">
-                                <b style="font-size:11px; color:#1e293b;">$${parseFloat(r.amount || 0).toLocaleString()}</b><br>
-                                <small style="color:${statusColor}; font-size:9px; font-weight:bold;">${status}</small>
+                                <b style="font-size:12px; color:#1e293b;">$${parseFloat(r.amount || 0).toLocaleString()}</b><br>
+                                <small style="color:${color}; font-size:9px; font-weight:bold;">${status}</small>
                             </div>
                         </div>`;
                 });
