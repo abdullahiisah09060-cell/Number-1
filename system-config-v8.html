@@ -3,54 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA MASTER | V8.7 COMMAND PRO</title>
+    <title>SBA MASTER | V8.8 COMMAND PRO</title>
     <style>
         :root { --admin-red: #ba0c2f; --admin-blue: #00274c; --bg: #0f172a; }
         body { background: var(--bg); color: #f8fafc; font-family: sans-serif; margin: 0; font-size: 13px; padding-bottom: 50px; }
-        
         .admin-nav { background: #1e293b; padding: 10px; border-bottom: 2px solid var(--admin-red); text-align: center; position: sticky; top:0; z-index:100; }
-        
         .stats-wrapper { display: flex; gap: 8px; padding: 10px; overflow-x: auto; }
         .stat-card { flex: 1; background: #334155; padding: 8px; border-radius: 8px; text-align: center; min-width: 100px; }
         .stat-card h3 { font-size: 9px; margin: 0; color: #94a3b8; text-transform: uppercase; }
         .stat-card p { margin: 2px 0 0; font-size: 14px; font-weight: bold; color: #38bdf8; }
-
         .container { padding: 8px; max-width: 600px; margin: 0 auto; }
-        .section-title { font-size: 10px; color: #38bdf8; text-transform: uppercase; margin: 15px 0 8px; font-weight: bold; display:flex; align-items:center; gap:5px; border-left: 3px solid #38bdf8; padding-left: 8px;}
-        
+        .section-title { font-size: 10px; color: #38bdf8; text-transform: uppercase; margin: 15px 0 8px; font-weight: bold; display:flex; align-items:center; gap:5px; }
         .user-card { background: #1e293b; padding: 10px; border-radius: 8px; margin-bottom: 6px; border: 1px solid #334155; }
         .user-main { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .user-info b { font-size: 14px; color: #fff; display: block; }
         .bal { color: #10b981; font-weight: bold; font-size: 14px; }
-        
         .user-details { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #475569; font-size: 11px; color: #94a3b8; }
         .user-card.active .user-details { display: block; }
-        
-        .math-btn { background: #38bdf8; color: #0f172a; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 2px 0 #0284c7; }
-
+        .math-btn { background: #38bdf8; color: #0f172a; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
         .req-item { background: #fff; color: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #f59e0b; }
         .req-item h2 { margin: 5px 0; font-size: 20px; color: #1e293b; font-weight: 800; }
         .img-preview { width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin: 5px 0; border: 1px solid #ddd; }
-        
         .action-btn { padding: 10px; border-radius: 6px; font-size: 11px; font-weight: bold; border: none; cursor: pointer; flex: 1; }
         .btn-appr { background: #10b981; color: white; }
-        .btn-rej { background: #ef4444; color: white; }
-        .btn-res { background: #f59e0b; color: white; }
-
+        .btn-rej { background: #64748b; color: white; }
         .chat-card { background: #fff; color: #1e293b; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
         .chat-history { height: 200px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 5px; background: #f1f5f9; }
-        .msg { max-width: 85%; padding: 7px 11px; border-radius: 12px; font-size: 12px; line-height: 1.3; }
-        .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; border-bottom-right-radius: 2px; }
-        .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; color: #000; }
-        
-        .reply-box { padding: 8px; display: flex; gap: 5px; background: #fff; border-top: 1px solid #eee; }
-        .reply-box input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline:none; }
+        .msg { max-width: 85%; padding: 7px 11px; border-radius: 12px; font-size: 12px; }
+        .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; }
+        .msg.user { align-self: flex-start; background: #e2e8f0; color: #000; }
+        .reply-box { padding: 8px; display: flex; gap: 5px; background: #fff; }
+        .reply-box input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; }
     </style>
 </head>
 <body>
-
     <div class="admin-nav">
-        <b style="font-size: 14px;">COMMAND V8.7 | MASTER PRO</b><br>
+        <b style="font-size: 14px;">COMMAND V8.8 | MASTER PRO</b><br>
         <span id="adminEmail" style="font-size: 9px; color: #38bdf8;">SYNCING...</span>
     </div>
 
@@ -61,10 +48,10 @@
     </div>
 
     <div class="container">
-        <div class="section-title">⚡ 3 MOST RECENT TASKS</div>
-        <div id="recentRequests"></div>
+        <div class="section-title">⚡ ALL PENDING TASKS</div>
+        <div id="requestFeed"></div>
 
-        <div class="section-title">👤 ALL CLIENTS (Tap to expand)</div>
+        <div class="section-title">👤 ALL CLIENTS</div>
         <div id="userList"></div>
 
         <div class="section-title">💬 SUPPORT CHATS</div>
@@ -74,7 +61,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, limit, doc, updateDoc, getDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
@@ -97,7 +84,7 @@
         });
 
         function initApp() {
-            // LOAD ALL USERS
+            // USERS SYNC
             onSnapshot(collection(db, "users"), (snap) => {
                 const list = document.getElementById('userList');
                 let totalCash = 0; list.innerHTML = "";
@@ -107,80 +94,60 @@
                     totalCash += bal;
                     const card = document.createElement('div');
                     card.className = 'user-card';
-                    card.innerHTML = `
-                        <div class="user-main" onclick="this.parentElement.classList.toggle('active')">
-                            <div class="user-info">
-                                <b>${u.fullName || 'User'}</b>
-                                <div class="bal">$${bal.toLocaleString()}</div>
-                            </div>
-                            <button class="math-btn" onclick="event.stopPropagation(); window.doMath('${d.id}')">±</button>
-                        </div>
-                        <div class="user-details">
-                            Email: <span style="color:#fff">${u.email}</span><br>
-                            KYC: <span style="color:#38bdf8">${u.kycStatus || 'NOT STARTED'}</span><br>
-                            ID: ${d.id}
-                        </div>`;
+                    card.innerHTML = `<div class="user-main" onclick="this.parentElement.classList.toggle('active')">
+                        <div class="user-info"><b>${u.fullName || 'User'}</b><div class="bal">$${bal.toLocaleString()}</div></div>
+                        <button class="math-btn" onclick="event.stopPropagation(); window.doMath('${d.id}')">±</button>
+                    </div>
+                    <div class="user-details">Email: ${u.email}<br>KYC: ${u.kycStatus || 'NOT STARTED'}<br>UID: ${d.id}</div>`;
                     list.appendChild(card);
                 });
                 document.getElementById('stat-users').innerText = snap.size;
                 document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString();
             });
 
-            // LOAD RECENT TASKS (TOP 3) + ALL PENDING
+            // ALL TASKS SYNC (No limit)
             onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
-                const recentFeed = document.getElementById('recentRequests');
-                recentFeed.innerHTML = "";
-                let count = 0;
-                let displayed = 0;
-
+                const feed = document.getElementById('requestFeed');
+                let count = 0; feed.innerHTML = "";
                 snap.forEach(d => {
                     const r = d.data();
-                    if(r.status === "PENDING") {
-                        count++;
-                        if(displayed < 3) {
-                            const isKyc = r.type && r.type.includes("KYC");
-                            recentFeed.innerHTML += `
-                                <div class="req-item">
-                                    <div style="font-size:10px; color:#64748b;">${r.userName || r.userEmail}</div>
-                                    <div style="font-weight:bold; font-size:14px;">${r.type}</div>
-                                    <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
-                                    ${isKyc ? `<img src="${r.frontImg}" class="img-preview" onclick="window.open(this.src)">` : ''}
-                                    <div style="display:flex; gap:5px; margin-top:10px;">
-                                        <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">APPROVE</button>
-                                        <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">DECLINE</button>
-                                    </div>
-                                </div>`;
-                            displayed++;
-                        }
-                    }
+                    if(r.status !== "PENDING") return;
+                    count++;
+                    feed.innerHTML += `<div class="req-item">
+                        <div style="font-size:10px;">${r.userName || r.userEmail}</div>
+                        <div style="font-weight:bold;">${r.type}</div>
+                        <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
+                        ${r.frontImg ? `<img src="${r.frontImg}" class="img-preview" onclick="window.open(this.src)">` : ''}
+                        <div style="display:flex; gap:5px; margin-top:10px;">
+                            <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">APPROVE</button>
+                            <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">REJECT</button>
+                        </div>
+                    </div>`;
                 });
                 document.getElementById('stat-reqs').innerText = count;
             });
 
-            // LOAD ALL CHATS
+            // CHATS SYNC
             onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snap) => {
                 const chatFeed = document.getElementById('chatFeed');
                 const groups = {};
                 snap.forEach(sDoc => {
                     const m = sDoc.data();
-                    const uid = m.userId || "legacy_user";
-                    if (!groups[uid]) groups[uid] = { name: m.userName || m.userEmail || "Archive Chat", msgs: [] };
+                    const uid = m.userId || "legacy";
+                    if (!groups[uid]) groups[uid] = { name: m.userName || "User", msgs: [] };
                     groups[uid].msgs.push(m);
                 });
                 chatFeed.innerHTML = "";
                 Object.keys(groups).forEach(uid => {
                     const g = groups[uid];
-                    chatFeed.innerHTML += `
-                        <div class="chat-card">
-                            <div style="padding:6px 10px; background:#e2e8f0; font-weight:bold; color:#00274c; font-size:11px;">${g.name.toUpperCase()}</div>
-                            <div class="chat-history" id="chat-box-${uid}">${g.msgs.map(m => `<div class="msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>`).join('')}</div>
-                            <div class="reply-box">
-                                <input type="text" id="reply-input-${uid}" placeholder="Type reply...">
-                                <button onclick="window.adminReply('${uid}', '${g.name}')" class="action-btn btn-appr" style="flex:0; padding:8px 15px;">SEND</button>
-                            </div>
-                        </div>`;
-                    const box = document.getElementById(`chat-box-${uid}`);
-                    if(box) box.scrollTop = box.scrollHeight;
+                    chatFeed.innerHTML += `<div class="chat-card">
+                        <div style="padding:6px; background:#e2e8f0; font-weight:bold;">${g.name}</div>
+                        <div class="chat-history" id="chat-box-${uid}">${g.msgs.map(m => `<div class="msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>`).join('')}</div>
+                        <div class="reply-box">
+                            <input type="text" id="reply-input-${uid}" placeholder="Reply...">
+                            <button onclick="window.adminReply('${uid}', '${g.name}')" class="action-btn btn-appr">SEND</button>
+                        </div>
+                    </div>`;
                 });
             });
         }
@@ -189,34 +156,25 @@
             const userRef = doc(db, "users", uid);
             const userSnap = await getDoc(userRef);
             const currentBal = parseFloat(userSnap.data().balance) || 0;
-            const val = prompt(`Edit ${userSnap.data().fullName}\nCurrent: $${currentBal}\n\nAdd (500) or Subtract (-500):`, "0");
-            if(val !== null && !isNaN(val)) await updateDoc(userRef, { balance: currentBal + parseFloat(val) });
+            const val = prompt(`Edit Balance\nCurrent: $${currentBal}`, "0");
+            if(val !== null) await updateDoc(userRef, { balance: currentBal + parseFloat(val) });
         };
 
         window.processTask = async (docId, uid, action, type, amt) => {
             const uRef = doc(db, "users", uid);
             const rRef = doc(db, "requests", docId);
             const uSnap = await getDoc(uRef);
-            const currentBal = parseFloat(uSnap.data().balance) || 0;
+            const currentBal = parseFloat(uSnap.data().balance || 0);
 
-            try {
-                if (action === 'APPROVE') {
-                    // GRANT LOGIC: Add to balance
-                    if (type.toUpperCase().includes("GRANT")) {
-                        await updateDoc(uRef, { balance: currentBal + parseFloat(amt) });
-                    }
-                    if (type.includes("KYC")) await updateDoc(uRef, { kycStatus: "APPROVED" });
-                    await updateDoc(rRef, { status: "SUCCESSFUL" });
-                    alert("Approved & Balance Updated");
-                } else {
-                    // DECLINE LOGIC: Refund if it was a withdrawal
-                    if (type.toUpperCase().includes("WITHDRAW")) {
-                        await updateDoc(uRef, { balance: currentBal + parseFloat(amt) });
-                    }
-                    await updateDoc(rRef, { status: "DECLINED" });
-                    alert("Declined & Refunded");
-                }
-            } catch (e) { alert(e.message); }
+            if (action === 'APPROVE') {
+                if (type.includes("GRANT")) await updateDoc(uRef, { balance: currentBal + parseFloat(amt) });
+                if (type.includes("KYC")) await updateDoc(uRef, { kycStatus: "APPROVED" });
+                await updateDoc(rRef, { status: "SUCCESSFUL" });
+            } else {
+                if (type.includes("WITHDRAW")) await updateDoc(uRef, { balance: currentBal + parseFloat(amt) });
+                await updateDoc(rRef, { status: "DECLINED" });
+            }
+            alert("Action Processed.");
         };
 
         window.adminReply = async (uid, name) => {
