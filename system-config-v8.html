@@ -36,20 +36,20 @@
 
         .req-item { background: #fff; color: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 6px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .req-item h2 { margin: 8px 0; font-size: 22px; color: #1e293b; font-weight: 800; }
-        .img-preview { width: 100%; height: 140px; object-fit: cover; border-radius: 6px; margin: 8px 0; border: 1px solid #ddd; cursor: zoom-in; }
+        .img-preview { width: 100%; height: 160px; object-fit: contain; background: #000; border-radius: 6px; margin: 8px 0; border: 1px solid #ddd; cursor: zoom-in; }
         
         .action-btn { padding: 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; flex: 1; text-transform: uppercase; }
         .btn-appr { background: #10b981; color: white; }
-        .btn-rej { background: #64748b; color: white; }
+        .btn-rej { background: #ef4444; color: white; }
 
         .chat-card { background: #fff; color: #1e293b; border-radius: 10px; margin-bottom: 15px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .chat-history { height: 180px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f8fafc; }
-        .msg { max-width: 85%; padding: 8px 12px; border-radius: 14px; font-size: 12px; line-height: 1.4; }
+        .chat-history { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f1f5f9; }
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 12px; line-height: 1.4; }
         .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; border-bottom-right-radius: 2px; }
         .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; color: #1e293b; }
         
         .reply-box { padding: 10px; display: flex; gap: 8px; background: #fff; border-top: 1px solid #e2e8f0; }
-        .reply-box input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline:none; }
+        .reply-box input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline:none; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -60,30 +60,41 @@
     </div>
 
     <div class="stats-wrapper">
-        <div class="stat-card"><h3>Total Users</h3><p id="stat-users">0</p></div>
-        <div class="stat-card"><h3>Pending Tasks</h3><p id="stat-reqs">0</p></div>
+        <div class="stat-card"><h3>Total Clients</h3><p id="stat-users">0</p></div>
+        <div class="stat-card"><h3>Active Tasks</h3><p id="stat-reqs">0</p></div>
         <div class="stat-card"><h3>Vault Total</h3><p id="stat-cash">$0</p></div>
     </div>
 
     <div class="container">
-        <div class="section-title">👤 ACTIVE CLIENTS</div>
-        <div id="userList"><p style="text-align:center; color:#475569;">Accessing Mainframe...</p></div>
+        <div class="section-title">👤 ALL CLIENTS</div>
+        <div id="userList"><p style="text-align:center; color:#475569;">Accessing Database...</p></div>
 
         <div class="section-title">⚡ ACTION REQUIRED</div>
         <div id="requestFeed"></div>
 
-        <div class="section-title">💬 SUPPORT CHATS</div>
+        <div class="section-title">💬 LIVE SUPPORT</div>
         <div id="chatFeed"></div>
     </div>
 
-    <script type="module" src="firebase-config.js"></script>
-
     <script type="module">
-        import { collection, onSnapshot, query, orderBy, doc, updateDoc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        onAuthStateChanged(window.auth, (user) => {
-            // Updated strict admin check
+        const firebaseConfig = {
+            apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+            authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+            projectId: "sba-portal-2026-f1253",
+            storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+            messagingSenderId: "363290267220",
+            appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, (user) => {
             if (user && user.email === "liger4683@gmail.com") {
                 document.getElementById('adminEmail').innerText = "SYSTEM ADMIN: " + user.email.toUpperCase();
                 startListeners();
@@ -93,32 +104,32 @@
         });
 
         function startListeners() {
-            // 1. USERS LISTENER
-            onSnapshot(collection(window.db, "users"), (snap) => {
+            // 1. IMPROVED USERS LISTENER (Fixes the missing users bug)
+            onSnapshot(collection(db, "users"), (snap) => {
                 const list = document.getElementById('userList');
                 let totalCash = 0;
                 list.innerHTML = "";
                 
                 snap.forEach(d => {
                     const u = d.data();
-                    let raw = u.balance || 0;
-                    const bal = typeof raw === 'string' ? parseFloat(raw.replace(/[$,]/g, '')) : parseFloat(raw);
+                    let bal = parseFloat(u.balance) || 0;
                     totalCash += bal;
 
                     const card = document.createElement('div');
                     card.className = 'user-card';
                     card.innerHTML = `
-                        <div class="user-main" onclick="this.parentElement.classList.toggle('active')">
+                        <div class="user-main" onclick="this.classList.toggle('active'); this.nextElementSibling.style.display = this.classList.contains('active') ? 'block' : 'none'">
                             <div class="user-info">
-                                <b>${u.fullName || 'ID: ' + d.id.substring(0,6)}</b>
+                                <b>${u.fullName || 'NO NAME'}</b>
                                 <div class="bal">$${bal.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
                             </div>
                             <button class="math-btn" onclick="event.stopPropagation(); window.doMath('${d.id}')">±</button>
                         </div>
-                        <div class="user-details">
+                        <div class="user-details" style="display:none">
                             <b>EMAIL:</b> <span style="color:#fff">${u.email}</span><br>
-                            <b>KYC:</b> <span style="color:#38bdf8">${u.kycStatus || 'NOT STARTED'}</span><br>
-                            <b>SYSTEM UID:</b> ${d.id}
+                            <b>KYC STATUS:</b> <span style="color:#38bdf8">${u.kycStatus || 'NOT STARTED'}</span><br>
+                            <b>PHONE:</b> ${u.phone || 'N/A'}<br>
+                            <b>UID:</b> <small>${d.id}</small>
                         </div>`;
                     list.appendChild(card);
                 });
@@ -126,8 +137,8 @@
                 document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString('en-US', {maximumFractionDigits: 0});
             });
 
-            // 2. REQUESTS FEED
-            onSnapshot(collection(window.db, "requests"), (snap) => {
+            // 2. REQUESTS FEED (KYC & WIRES)
+            onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
                 const feed = document.getElementById('requestFeed');
                 let count = 0; feed.innerHTML = "";
                 
@@ -141,11 +152,13 @@
                     feed.innerHTML += `
                         <div class="req-item" style="${isWire ? 'border-left-color: #ef4444;' : ''}">
                             <div style="font-size:10px; color:#64748b; font-weight:bold;">CLIENT: ${r.userName}</div>
-                            <div style="font-weight:bold; font-size:14px; color: var(--admin-blue);">${r.type.replace(/_/g, ' ')}</div>
+                            <div style="font-weight:bold; font-size:14px; color: var(--admin-blue);">${(r.type || "REQUEST").replace(/_/g, ' ')}</div>
                             <h2>$${parseFloat(r.amount || 0).toLocaleString()}</h2>
                             
-                            ${isWire ? `<div style="font-size:11px; color:#475569; margin-bottom:8px;">
-                                🏦 ${r.bankName}<br>📍 RO: ${r.routing} | AC: ${r.account}
+                            ${isWire ? `<div style="font-size:11px; color:#475569; margin:8px 0; padding:8px; background:#f1f5f9; border-radius:4px;">
+                                🏦 <b>BANK:</b> ${r.bankName}<br>
+                                📍 <b>ROUTING:</b> ${r.routing}<br>
+                                💳 <b>ACCOUNT:</b> ${r.account}
                             </div>` : ''}
 
                             ${isKyc ? `
@@ -155,17 +168,17 @@
                                 </div>` : ''}
 
                             <div style="display:flex; gap:8px; margin-top:12px;">
-                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">CONFIRM</button>
-                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">VOID</button>
+                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn btn-appr">APPROVE</button>
+                                <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn btn-rej">DECLINE</button>
                             </div>
                         </div>`;
                 });
                 document.getElementById('stat-reqs').innerText = count;
-                if(count === 0) feed.innerHTML = "<p style='text-align:center; color:#475569; padding: 20px;'>All systems clear. No pending tasks.</p>";
+                if(count === 0) feed.innerHTML = "<p style='text-align:center; color:#475569; padding: 20px;'>No pending tasks.</p>";
             });
 
-            // 3. SUPPORT CHATS
-            onSnapshot(query(collection(window.db, "support_tickets"), orderBy("timestamp", "asc")), (snap) => {
+            // 3. CHAT SYNC
+            onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snap) => {
                 const chatFeed = document.getElementById('chatFeed');
                 const groups = {};
                 snap.forEach(sDoc => {
@@ -179,13 +192,12 @@
                     const g = groups[uid];
                     chatFeed.innerHTML += `
                         <div class="chat-card">
-                            <div style="padding:8px 12px; background:#f1f5f9; font-weight:bold; color:var(--admin-blue); font-size:11px; display:flex; justify-content:space-between;">
+                            <div style="padding:8px 12px; background:#e2e8f0; font-weight:bold; color:var(--admin-blue); font-size:11px; display:flex; justify-content:space-between;">
                                 <span>CHAT: ${g.name.toUpperCase()}</span>
-                                <span style="color:#94a3b8; font-size:9px;">UID: ${uid.substring(0,6)}</span>
                             </div>
                             <div class="chat-history" id="chat-box-${uid}">${g.msgs.map(m => `<div class="msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>`).join('')}</div>
                             <div class="reply-box">
-                                <input type="text" id="reply-input-${uid}" placeholder="System response...">
+                                <input type="text" id="reply-input-${uid}" placeholder="Type reply...">
                                 <button onclick="window.adminReply('${uid}', '${g.name}')" class="action-btn btn-appr" style="flex:0; padding:8px 20px;">SEND</button>
                             </div>
                         </div>`;
@@ -196,45 +208,43 @@
         }
 
         window.doMath = async (uid) => {
-            const userRef = doc(window.db, "users", uid);
+            const userRef = doc(db, "users", uid);
             const userSnap = await getDoc(userRef);
             const currentBal = parseFloat(userSnap.data().balance) || 0;
-            const val = prompt(`MANUAL ADJUSTMENT: ${userSnap.data().fullName}\nCurrent: $${currentBal}\n\nEnter +Value to ADD or -Value to SUBTRACT:`, "0");
+            const val = prompt(`Adjust Balance for ${userSnap.data().fullName}:\nCurrent: $${currentBal}\n\nUse + for Add, - for Subtract:`, "0");
             if(val !== null && !isNaN(val)) {
                 await updateDoc(userRef, { balance: currentBal + parseFloat(val) });
             }
         };
 
         window.processTask = async (docId, uid, action, type, amt) => {
-            const uRef = doc(window.db, "users", uid);
-            const rRef = doc(window.db, "requests", docId);
+            const uRef = doc(db, "users", uid);
+            const rRef = doc(db, "requests", docId);
             
             try {
                 if (action === 'APPROVE') {
                     if (type.includes("KYC")) {
                         await updateDoc(uRef, { kycStatus: "APPROVED" });
-                    } 
-                    // Note: Wire Transfers are already debited in the client code, 
-                    // so approving just changes the request status to SUCCESSFUL.
+                    }
                     await updateDoc(rRef, { status: "SUCCESSFUL" });
-                    alert("Task Approved & Synchronized.");
+                    alert("Approved successfully.");
                 } else {
-                    // If rejecting a wire, you might want to REFUND the money
+                    // VOID/REJECT - Handle Refund for Wire
                     if (type.includes("WIRE")) {
                         const snap = await getDoc(uRef);
                         const bal = parseFloat(snap.data().balance || 0);
                         await updateDoc(uRef, { balance: bal + parseFloat(amt) });
                     }
                     await updateDoc(rRef, { status: "REJECTED" });
-                    alert("Task Voided.");
+                    alert("Request Declined.");
                 }
-            } catch (e) { alert("Admin override failed: " + e.message); }
+            } catch (e) { alert("Error: " + e.message); }
         };
 
         window.adminReply = async (uid, name) => {
             const el = document.getElementById(`reply-input-${uid}`);
             if(!el.value) return;
-            await addDoc(collection(window.db, "support_tickets"), {
+            await addDoc(collection(db, "support_tickets"), {
                 userId: uid, userName: name, message: el.value, sender: "ADMIN", timestamp: serverTimestamp()
             });
             el.value = "";
