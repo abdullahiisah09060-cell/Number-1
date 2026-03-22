@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="style.css">
     <style>
         label { display: block; font-size: 12px; font-weight: bold; color: #1e293b; margin-bottom: 8px; margin-top: 15px; }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; font-family: inherit; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; font-family: inherit; font-size: 14px; }
         .danger-card { margin-top: 15px; background: #fff1f2; border: 1px solid #fecdd3; padding: 20px; border-radius: 12px; }
-        .danger-btn { background: #e11d48; color: white; border: none; font-size: 11px; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .danger-btn { background: #e11d48; color: white; border: none; font-size: 11px; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: auto !important; }
+        .status-badge { background: #ecfdf5; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #10b981; display: flex; align-items: center; gap: 10px; }
     </style>
 </head>
 <body style="background: #f1f5f9;">
@@ -25,12 +26,12 @@
         </button>
     </div>
 
-    <div class="container">
-        <div class="card" style="margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
-            <h2 style="color: #1e3a8a; font-size: 18px; margin-bottom: 5px;">Profile & Security</h2>
+    <div class="container" style="max-width: 500px; margin: 0 auto; padding: 15px;">
+        <div class="card" style="background: white; padding: 25px; margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border-top: 5px solid #1e3a8a;">
+            <h2 style="color: #1e3a8a; font-size: 18px; margin: 0 0 5px;">Profile & Security</h2>
             <p style="font-size: 11px; color: #64748b; margin-bottom: 20px;">Manage your 2026 federal credentials and contact information.</p>
 
-            <div style="background: #ecfdf5; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #10b981; display: flex; align-items: center; gap: 10px;">
+            <div class="status-badge">
                 <span style="font-size: 20px;">🛡️</span>
                 <div>
                     <p style="margin: 0; font-size: 11px; font-weight: bold; color: #065f46;">Security Level: High</p>
@@ -39,7 +40,7 @@
             </div>
 
             <label>Full Legal Name (Verified 🔒)</label>
-            <input type="text" id="dispName" readonly style="background: #f1f5f9; cursor: not-allowed; font-weight: bold; color: #64748b; border: 1px dashed #cbd5e1;">
+            <input type="text" id="dispName" readonly style="background: #f8fafc; cursor: not-allowed; font-weight: bold; color: #64748b; border: 1px dashed #cbd5e1;">
             <p style="font-size: 9px; color: #94a3b8; margin-top: 5px; margin-bottom: 10px;">Legal names are locked to your identity record for 2026 federal audits.</p>
 
             <label>Primary Phone Number</label>
@@ -51,7 +52,7 @@
                 <option value="disabled">Disabled (High Risk)</option>
             </select>
 
-            <button id="saveBtn" style="background: #1e3a8a; color: white; padding: 16px; border-radius: 10px; width: 100%; font-weight: 800; border: none; margin-top: 20px; cursor: pointer; text-transform: uppercase;">Update Profile</button>
+            <button id="saveBtn" style="background: #1e3a8a; color: white; padding: 16px; border-radius: 10px; width: 100%; font-weight: 800; border: none; margin-top: 25px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">Update Profile</button>
         </div>
 
         <div class="danger-card">
@@ -63,11 +64,12 @@
         </div>
 
         <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 25px; font-family: monospace;">
-            ACCOUNT_REF: <span id="userUidDisplay">AUTHENTICATING...</span>
+            ACCOUNT_REF: <span id="userUidDisplay">FETCHING...</span>
         </p>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script type="module" src="firebase-config.js"></script>
+    
     <script type="module">
         import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
@@ -76,19 +78,19 @@
 
         onAuthStateChanged(window.auth, async (user) => {
             if (user) {
-                // Security Check: Kick unverified users
-                if (!user.emailVerified) {
-                    window.location.href = 'verify.html';
-                    return;
-                }
-
+                // Update UI with partial UID
                 document.getElementById('userUidDisplay').innerText = "SBA-USER-" + user.uid.substring(0, 12).toUpperCase();
                 
-                const docSnap = await getDoc(doc(window.db, "users", user.uid));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('dispName').value = data.fullName || "Loading...";
-                    if(data.phone) document.getElementById('phone').value = data.phone;
+                // Fetch existing data
+                try {
+                    const docSnap = await getDoc(doc(window.db, "users", user.uid));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.getElementById('dispName').value = data.fullName || "User Account";
+                        if(data.phone) document.getElementById('phone').value = data.phone;
+                    }
+                } catch (error) {
+                    console.error("Error loading profile:", error);
                 }
             } else {
                 window.location.href = 'index.html';
@@ -110,10 +112,10 @@
                     lastSettingsUpdate: new Date()
                 });
                 alert("SUCCESS: Profile security and 2FA protocols have been updated.");
-                saveBtn.innerText = "Update Profile";
-                saveBtn.disabled = false;
             } catch (e) {
-                alert("TRANSMISSION ERROR: System session expired. Please refresh.");
+                console.error(e);
+                alert("TRANSMISSION ERROR: System session expired or network failure.");
+            } finally {
                 saveBtn.innerText = "Update Profile";
                 saveBtn.disabled = false;
             }
