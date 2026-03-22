@@ -15,14 +15,14 @@
             justify-content: center; 
             align-items: center; 
             height: 100vh;
-            padding: 15px; /* This creates the space around the box */
+            padding: 15px; 
             box-sizing: border-box;
         }
 
         .chat-box {
             width: 100%;
-            max-width: 420px; /* Perfect size for phone & desktop */
-            height: 85vh; /* Does not touch top/bottom */
+            max-width: 420px; 
+            height: 85vh; 
             background: #ffffff;
             border-radius: 16px;
             display: flex;
@@ -54,16 +54,15 @@
             background: #f8fafc; 
         }
 
-        /* Compact Bubbles */
-        .bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13.5px; line-height: 1.4; }
+        .bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13.5px; line-height: 1.4; word-wrap: break-word; }
         .user { align-self: flex-end; background: var(--sba-accent); color: white; border-bottom-right-radius: 2px; }
         .admin { align-self: flex-start; background: white; color: #334155; border: 1px solid #cbd5e1; border-bottom-left-radius: 2px; }
 
         .input-area { padding: 12px; background: white; border-top: 1px solid #edf2f7; display: flex; gap: 8px; }
         input { flex: 1; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 20px; outline: none; font-size: 14px; }
-        .send-btn { background: var(--sba-blue); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+        .send-btn { background: var(--sba-blue); color: white; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
 
-        .exit-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; font-size: 10px; cursor: pointer; }
+        .exit-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; font-size: 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -81,51 +80,43 @@
         </div>
 
         <div id="messageDisplay">
-            <div class="bubble admin">Welcome to the secure portal. A disbursement officer is available for your inquiry.</div>
+            <div class="bubble admin">Establishing secure connection...</div>
         </div>
 
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Type message...">
+            <input type="text" id="userInput" placeholder="Type message..." autocomplete="off">
             <button id="sendBtn" class="send-btn">➤</button>
         </div>
     </div>
 
+    <script type="module" src="firebase-config.js"></script>
+
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { collection, addDoc, query, where, onSnapshot, serverTimestamp, doc, getDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
-            authDomain: "sba-grant-2026.firebaseapp.com",
-            projectId: "sba-grant-2026",
-            storageBucket: "sba-grant-2026.firebasestorage.app",
-            messagingSenderId: "838430821326",
-            appId: "1:838430821326:web:6438deacb334076a64f99f"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
+        const display = document.getElementById('messageDisplay');
+        const input = document.getElementById('userInput');
         let userName = "Applicant";
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(window.auth, async (user) => {
             if (user) {
-                const uSnap = await getDoc(doc(db, "users", user.uid));
+                // Fetch User Name for Admin's view
+                const uSnap = await getDoc(doc(window.db, "users", user.uid));
                 if(uSnap.exists()) userName = uSnap.data().fullName || "Applicant";
 
-                const q = query(collection(db, "support_tickets"), where("userId", "==", user.uid));
+                // Listen for messages involving this user
+                const q = query(
+                    collection(window.db, "support_tickets"), 
+                    where("userId", "==", user.uid),
+                    orderBy("timestamp", "asc") // Sort by time automatically
+                );
 
                 onSnapshot(q, (snapshot) => {
-                    const display = document.getElementById('messageDisplay');
-                    display.innerHTML = '<div class="bubble admin">Welcome ' + userName + '. Please state your inquiry regarding your allocation.</div>';
+                    display.innerHTML = `<div class="bubble admin">Welcome ${userName}. A disbursement officer is monitoring this secure line.</div>`;
                     
-                    let msgs = [];
-                    snapshot.forEach(doc => msgs.push(doc.data()));
-                    msgs.sort((a, b) => (a.timestamp?.toMillis() || 0) - (b.timestamp?.toMillis() || 0));
-
-                    msgs.forEach(m => {
+                    snapshot.forEach(doc => {
+                        const m = doc.data();
                         const div = document.createElement('div');
                         div.className = `bubble ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
                         div.innerHTML = (m.sender === 'ADMIN' ? '<b>[AGENT]:</b> ' : '') + m.message;
@@ -133,28 +124,33 @@
                     });
                     display.scrollTop = display.scrollHeight;
                 });
-            } else { window.location.href = 'index.html'; }
+            } else { 
+                window.location.href = 'index.html'; 
+            }
         });
 
         const sendMessage = async () => {
-            const input = document.getElementById('userInput');
             const msg = input.value.trim();
             if(!msg) return;
-            const user = auth.currentUser;
+            
+            const user = window.auth.currentUser;
             input.value = ""; 
+
             try {
-                await addDoc(collection(db, "support_tickets"), {
+                await addDoc(collection(window.db, "support_tickets"), {
                     userId: user.uid,
                     userName: userName,
                     message: msg,
                     sender: "USER",
                     timestamp: serverTimestamp()
                 });
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("Message failed:", err); 
+            }
         };
 
         document.getElementById('sendBtn').onclick = sendMessage;
-        document.getElementById('userInput').onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+        input.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
     </script>
 </body>
 </html>
