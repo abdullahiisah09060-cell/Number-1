@@ -78,7 +78,7 @@
     </div>
 
     <div class="activity-card">
-        <div class="log-title"><span>Federal Activity Log</span><span>SECURE</span></div>
+        <div class="log-title"><span>RECENT TRANSACTIONS (3)</span><span style="color:#10b981;">SECURE</span></div>
         <div id="activityLog">
             <p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">Establishing secure connection...</p>
         </div>
@@ -107,7 +107,7 @@
 
             document.getElementById('caseId').innerText = `CASE ID: SBA-${user.uid.substring(0,8).toUpperCase()}-2026`;
 
-            // 1. FAST LIVE USER LISTENER
+            // 1. LIVE USER DATA (Balance & KYC)
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
@@ -123,7 +123,6 @@
                     const transferBtn = document.getElementById('transferBtn');
                     const kycBtn = document.getElementById('kycBtn');
 
-                    // Handle KYC states
                     if(kycStatus === "APPROVED") {
                         pill.innerText = "● ACCOUNT VERIFIED";
                         pill.className = "status-pill status-verified";
@@ -131,7 +130,6 @@
                         kycBtn.className = "grid-item is-done";
                         kycBtn.onclick = () => alert("Identity Verification Complete.");
                         
-                        // Only allow transfer if balance exists and KYC is approved
                         if(bal > 0) {
                             transferBtn.classList.remove('is-locked');
                             transferBtn.innerHTML = "<span>🏦</span><b>Transfer</b>";
@@ -139,7 +137,7 @@
                         } else {
                             transferBtn.classList.add('is-locked');
                             transferBtn.innerHTML = "<span>🏦</span><b>Transfer</b><div class='lock-icon'>🔒</div>";
-                            transferBtn.onclick = () => alert("Allocation must be processed first.");
+                            transferBtn.onclick = () => alert("Grant funds must be approved first.");
                         }
                     } 
                     else if (["REJECTED", "DECLINED", "DENIED"].includes(kycStatus)) {
@@ -148,48 +146,49 @@
                         kycBtn.className = "grid-item is-error";
                         kycBtn.onclick = () => location.href = 'kyc.html';
                         transferBtn.classList.add('is-locked');
-                        transferBtn.onclick = () => alert("Verification rejected. Please contact support.");
+                        transferBtn.onclick = () => alert("Verification rejected. Check your profile.");
                     }
                     else {
                         pill.innerText = "● PENDING VERIFICATION";
                         kycBtn.onclick = () => location.href = 'kyc.html';
                         transferBtn.classList.add('is-locked');
                         transferBtn.innerHTML = "<span>🏦</span><b>Transfer</b><div class='lock-icon'>🔒</div>";
-                        transferBtn.onclick = () => alert("Verification is required to unlock transfers.");
+                        transferBtn.onclick = () => alert("Please verify your identity to unlock transfers.");
                     }
                 }
             });
 
-            // 2. LIVE ACTIVITY LOG (Shows in dashboard)
+            // 2. SHOW 3 MOST RECENT TRANSACTIONS ONLY
             const qry = query(
                 collection(db, "requests"), 
                 where("userId", "==", user.uid), 
                 orderBy("timestamp", "desc"),
-                limit(5)
+                limit(3)
             );
 
             onSnapshot(qry, (snap) => {
                 const logBox = document.getElementById('activityLog');
                 if(snap.empty) {
-                    logBox.innerHTML = `<p style="text-align:center; font-size:10px; color:#94a3b8; padding:20px;">No recent federal activity.</p>`;
+                    logBox.innerHTML = `<p style="text-align:center; font-size:10px; color:#94a3b8; padding:20px;">No recent transactions found.</p>`;
                     return;
                 }
                 logBox.innerHTML = "";
                 snap.forEach(d => {
                     const r = d.data();
                     const status = (r.status || 'PENDING').toUpperCase();
-                    let statusColor = "#f59e0b"; // Pending
+                    let statusColor = "#f59e0b"; // Pending/Default
+                    
                     if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) statusColor = "#10b981";
                     if (["DENIED", "FAILED", "REJECTED", "DECLINED"].includes(status)) statusColor = "#ef4444";
 
                     logBox.innerHTML += `
                         <div class="log-item">
                             <div>
-                                <b style="font-size:10px;">${(r.type || "FUNDS REQUEST").replace(/_/g, ' ')}</b><br>
+                                <b style="font-size:10px; color:#1e293b;">${(r.type || "FUNDS REQUEST").replace(/_/g, ' ')}</b><br>
                                 <small style="font-size:8px; color:#94a3b8;">REF: ${d.id.substring(0,8).toUpperCase()}</small>
                             </div>
                             <div style="text-align:right;">
-                                <b style="font-size:11px;">$${parseFloat(r.amount || 0).toLocaleString()}</b><br>
+                                <b style="font-size:11px; color:#1e293b;">$${parseFloat(r.amount || 0).toLocaleString()}</b><br>
                                 <small style="color:${statusColor}; font-size:9px; font-weight:bold;">${status}</small>
                             </div>
                         </div>`;
