@@ -3,14 +3,14 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 
-// --- CORE CONFIGURATION (Must match all pages) ---
+// --- CORE CONFIGURATION (SBA-PORTAL-2026) ---
 const firebaseConfig = {
-    apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
-    authDomain: "sba-grant-2026.firebaseapp.com",
-    projectId: "sba-grant-2026",
-    storageBucket: "sba-grant-2026.firebasestorage.app",
-    messagingSenderId: "838430821326",
-    appId: "1:838430821326:web:6438deacb334076a64f99f"
+    apiKey: "AIzaSyCq8CgTyNbKVbUm_GItIC7FAvTuNrNspxI",
+    authDomain: "sba-portal-2026-f1253.firebaseapp.com",
+    projectId: "sba-portal-2026-f1253",
+    storageBucket: "sba-portal-2026-f1253.firebasestorage.app",
+    messagingSenderId: "363290267220",
+    appId: "1:363290267220:web:2a3e8601c11be5dd6e27c1"
 };
 
 // Initialize Firebase
@@ -55,7 +55,7 @@ onAuthStateChanged(auth, (user) => {
                 const data = snap.data();
                 
                 // Update Balance UI
-                const balEls = document.querySelectorAll('#uBal, .uBal'); // Finds all balance elements
+                const balEls = document.querySelectorAll('#uBal, .uBal'); 
                 if(balEls.length > 0) {
                     const val = data.balance || "0.00";
                     const cleanVal = val.toString().replace(/,/g, '');
